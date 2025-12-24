@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RENÉ OS v11 - PERSONAL EDITION</title>
+    <title>RENÉ OS v12 - INSIDER EDITION</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
@@ -23,19 +23,20 @@
         .shake { animation: shakeVid 0.2s infinite; }
         @keyframes shakeVid { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-3px, -2px); } 100% { transform: translate(2px, 2px); } }
         
-        #terminal-console { position: absolute; top: 10%; bottom: 20%; left: 10%; right: 10%; color: var(--term-green); font-size: 1.2rem; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; text-align: center; }
+        #terminal-console { position: absolute; top: 10%; bottom: 20%; left: 10%; right: 10%; color: var(--term-green); font-size: 1.1rem; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; }
         .log-line { margin-bottom: 8px; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 5px; animation: fadeIn 0.2s forwards; }
-        #big-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; font-size: 3.5rem; font-weight: 900; z-index: 5; opacity: 0; text-shadow: 0 0 20px var(--cyan); }
+        #big-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; font-size: 3.5rem; font-weight: 900; z-index: 5; opacity: 0; text-shadow: 0 0 20px var(--cyan); pointer-events: none; transition: 0.5s; }
         
         /* ASK BOX (In Intro) */
-        #intro-ask-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: rgba(10, 15, 31, 0.95); border: 2px solid var(--cyan); padding: 25px; border-radius: 15px; z-index: 200; display: none; text-align: center; }
+        #intro-ask-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: rgba(10, 15, 31, 0.95); border: 2px solid var(--cyan); padding: 25px; border-radius: 15px; z-index: 200; display: none; text-align: center; box-shadow: 0 0 30px var(--cyan); }
         
         #start-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; padding: 25px 50px; font-size: 2rem; background: var(--pink); border: none; border-radius: 15px; color: white; cursor: pointer; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,0,80,0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255,0,80,0); } 100% { transform: scale(1); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* DASHBOARD & ROOMS */
-        .app-header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: #0a0f1f; border-bottom: 1px solid var(--cyan); }
+        /* DASHBOARD & UI */
+        .app-header { height: 60px; display: flex; align-items: center; justify-content: center; background: #0a0f1f; border-bottom: 1px solid var(--cyan); position: relative; }
+        .back-btn { position: absolute; left: 15px; background: none; border: none; color: white; font-size: 1.5rem; }
         .room-card { background: rgba(255,255,255,0.05); border: 1px solid var(--cyan); border-radius: 15px; padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 130px; }
         .input-field { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid var(--cyan); color: white; border-radius: 8px; text-align: center; font-family: 'Fredoka'; }
         .btn { background: var(--cyan); border: none; border-radius: 10px; padding: 12px 25px; font-weight: bold; color: #000; cursor: pointer; }
@@ -51,10 +52,10 @@
         <div id="big-overlay"></div>
         
         <div id="intro-ask-box">
-            <h3 id="ask-title" style="color:var(--yellow); margin-bottom:15px;">SECURITY CHECK</h3>
+            <h3 id="ask-title" style="color:var(--yellow); margin-bottom:15px; font-family:'Share Tech Mono'">IDENTITY VERIFICATION</h3>
             <p id="ask-question" style="margin-bottom:20px; font-size:1.2rem;"></p>
-            <input type="text" id="ask-input" class="input-field" placeholder="Deine Antwort...">
-            <button class="btn" onclick="intro.checkAnswer()">BESTÄTIGEN</button>
+            <input type="text" id="ask-input" class="input-field" placeholder="Eingabe...">
+            <button class="btn" onclick="intro.checkAnswer()">LOGIN</button>
         </div>
 
         <button id="start-btn" onclick="intro.start()">SYSTEM INITIALISIEREN ⚡</button>
@@ -63,42 +64,46 @@
     <div id="view-login" class="full-screen hidden">
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:radial-gradient(circle, #1a1a3e 0%, #0a0f1f 100%);">
             <div style="background:rgba(15, 23, 42, 0.9); border: 2px solid var(--cyan); border-radius: 20px; padding: 30px; text-align: center; width: 85%; max-width: 350px;">
-                <h1 style="color:var(--cyan); font-size:2.5rem; margin-bottom:10px;">RENÉ OS v11</h1>
-                <p style="opacity:0.7">Zugriff gewährt.</p>
+                <h1 style="color:var(--cyan); font-size:2.5rem; margin-bottom:10px;">RENÉ OS v12</h1>
+                <p style="opacity:0.7; margin-bottom:20px;">Willkommen zurück.</p>
                 <input type="text" id="username" class="input-field" placeholder="Dein Name..." maxlength="10">
-                <button class="btn" style="width:100%" onclick="app.login()">BETRETEN</button>
+                <button class="btn" style="width:100%" onclick="app.login()">DASHBOARD LADEN</button>
             </div>
         </div>
     </div>
 
-    <div id="view-dash" class="full-screen hidden">
-        <div class="app-header"><div></div><div style="font-family:'Bangers'; font-size:1.5rem; color:var(--pink)">DASHBOARD</div><div></div></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px;">
+    <div id="view-dash" class="full-screen hidden scrollable">
+        <div class="app-header"><div style="font-family:'Fredoka'; font-size:1.5rem; color:var(--pink)">PARTY ZENTRALE</div></div>
+        <div style="padding: 20px; text-align: center;">
+            <p style="color:var(--green)">Online: <span id="display-name">...</span></p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 20px 20px 20px;">
             <div class="room-card" onclick="app.nav('chat')"><span>💬</span><p>Chat</p></div>
             <div class="room-card" onclick="app.nav('snake')"><span>🐍</span><p>Snake</p></div>
             <div class="room-card" onclick="app.nav('tod')"><span>🎲</span><p>Party</p></div>
             <div class="room-card" onclick="app.nav('art')"><span>🎨</span><p>Picasso</p></div>
             <div class="room-card" onclick="app.nav('dj')"><span>🎹</span><p>Beats</p></div>
+            <div class="room-card" onclick="alert('Geschenk-Modul lädt am 01.12...')"><span>🎁</span><p>René Special</p></div>
         </div>
     </div>
 
     <div id="view-chat" class="full-screen hidden">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div>PARTY CHAT</div><div></div></div>
+        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div>CHAT</div></div>
         <div id="chat-list" style="flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px;"></div>
         <div style="padding:10px; background:#111; display:flex; gap:5px;"><input id="chat-in" class="input-field" style="margin:0; flex:1;"><button class="btn" onclick="app.chatSend()">➤</button></div>
     </div>
 
     <script>
         const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const db = gun.get('rene-party-v11-final');
+        const db = gun.get('rene-party-final-v12');
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let aCtx;
 
         const intro = {
             vids: ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4'],
             questions: [
-                { q: "Von welchem Balkon hat man die beste Aussicht?", a: ["eltern", "deinem", "wohnzimmer", "küche", "haus"] },
-                { q: "Welches Tier ist auf dem Bild mit Dir und DoN?", a: ["hund", "katze", "pferd", "esel", "löwe"] }
+                { q: "Von welchem Balkon hat man die beste Aussicht?", a: ["ronny", "balkon-ronny", "ronni"] },
+                { q: "Welche Tiere sind auf dem Bild mit Dir und DoN?", a: ["hund", "katze", "hunde", "katzen"] }
             ],
             currentQIdx: 0,
             
@@ -122,20 +127,19 @@
                 const c = document.getElementById('terminal-console');
                 const d = document.createElement('div'); d.className = 'log-line'; 
                 if(type==='err') d.style.color = 'var(--term-red)';
+                if(type==='success') d.style.color = 'var(--cyan)';
                 d.innerText = "> " + t; c.appendChild(d); c.scrollTop = c.scrollHeight;
             },
 
             seq: async () => {
                 const sleep = ms => new Promise(r => setTimeout(r, ms));
-                intro.log("INITIALIZING DO-N OVERRIDE..."); await sleep(1500);
+                intro.log("INITIALIZING DO-N OVERRIDE..."); await sleep(1200);
                 intro.glitch(200);
-                intro.log("SCANNING FOR RENÉ OS..."); await sleep(1000);
-                intro.log("TARGET ACQUIRED: RENÉ (29)", "success"); await sleep(1000);
+                intro.log("SEARCHING FOR TARGET: RENÉ..."); await sleep(1000);
+                intro.log("TARGET ACQUIRED: GEBURTSTAGSKIND", "success"); await sleep(800);
+                intro.log("ENCRYPTED DATA DETECTED.", "err"); await sleep(1500);
+                intro.log("STAGING SECURITY QUESTIONS..."); await sleep(1000);
                 
-                intro.glitch(400);
-                intro.log("ENCRYPTED DATA FOUND. SECURITY CHECK REQUIRED...", "err"); await sleep(2000);
-                
-                // Show Question 1
                 intro.showQuestion(0);
             },
 
@@ -144,28 +148,31 @@
                 const box = document.getElementById('intro-ask-box');
                 document.getElementById('ask-question').innerText = intro.questions[idx].q;
                 box.style.display = 'block';
+                document.getElementById('ask-input').value = "";
                 document.getElementById('ask-input').focus();
             },
 
             checkAnswer: async () => {
-                const input = document.getElementById('ask-input').value.toLowerCase();
-                const correctAnswers = intro.questions[intro.currentQIdx].a;
-                const isCorrect = correctAnswers.some(a => input.includes(a));
+                const val = document.getElementById('ask-input').value.toLowerCase();
+                const possibleAnswers = intro.questions[intro.currentQIdx].a;
+                
+                // Prüfen ob die Antwort passt
+                const isCorrect = possibleAnswers.some(ans => val.includes(ans));
 
                 if (isCorrect) {
                     document.getElementById('intro-ask-box').style.display = 'none';
                     intro.glitch(500);
-                    intro.log("ACCESS GRANTED: " + input.toUpperCase(), "success");
+                    intro.log("DECRYPTED: " + val.toUpperCase(), "success");
                     
                     if (intro.currentQIdx < intro.questions.length - 1) {
                         setTimeout(() => intro.showQuestion(intro.currentQIdx + 1), 1000);
                     } else {
-                        // All questions done
-                        intro.log("SYSTEM HIJACKED SUCCESSFULLY!", "success");
+                        // Alle Fragen beantwortet
+                        intro.log("SECURITY BYPASSED. FULL ACCESS GRANTED.", "success");
                         const o = document.getElementById('big-overlay');
                         o.innerText = "HAPPY BIRTHDAY RENÉ!";
                         o.style.opacity = 1;
-                        intro.glitch(1000);
+                        intro.glitch(1200);
                         setTimeout(() => {
                             document.getElementById('view-intro').classList.add('hidden');
                             document.getElementById('view-login').classList.remove('hidden');
@@ -173,8 +180,7 @@
                     }
                 } else {
                     intro.glitch(200);
-                    intro.log("ACCESS DENIED: WRONG DATA", "err");
-                    document.getElementById('ask-input').value = "";
+                    intro.log("AUTH ERROR: DATA MISMATCH", "err");
                 }
             }
         };
@@ -188,7 +194,7 @@
             },
             nav: (v) => { document.querySelectorAll('.full-screen').forEach(e=>e.classList.add('hidden')); document.getElementById('view-'+v).classList.remove('hidden'); },
             chatSend: () => { const i = document.getElementById('chat-in'); db.get('chat').set({u:app.user, t:i.value}); i.value=''; },
-            chatListen: () => { db.get('chat').map().once(data => { if(!data.t) return; const d = document.createElement('div'); d.innerText=data.u+": "+data.t; d.style.padding="5px"; document.getElementById('chat-list').appendChild(d); }); }
+            chatListen: () => { db.get('chat').map().once(data => { if(!data.t) return; const d = document.createElement('div'); d.innerText=data.u+": "+data.t; d.style.padding="5px"; d.style.borderBottom="1px solid #222"; document.getElementById('chat-list').appendChild(d); }); }
         };
     </script>
 </body>
