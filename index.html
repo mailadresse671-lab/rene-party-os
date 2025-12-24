@@ -1,108 +1,237 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>🎮 PARTY ARENA</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RENÉ OS v9 – CINEMATIC</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: system-ui, sans-serif;
-            background: radial-gradient(circle at top, #1a1a1a, #000);
-            color: white;
-            min-height: 100vh;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
-        header {
-            text-align: center;
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #ff0066, #ffcc00);
-            color: black;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        }
+<style>
+/* ===== VARIABLES ===== */
+:root {
+    --cyan:#00f2ea; --pink:#ff0050; --purple:#b026ff;
+    --green:#39ff14; --yellow:#ffee00;
+    --dark:#0a0f1f; --term-green:#0f0; --term-red:#ff3333;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{
+    background:#000;font-family:'Fredoka',sans-serif;color:#fff;
+    height:100vh;overflow:hidden;display:flex;flex-direction:column;
+}
+.hidden{display:none!important}
+.full-screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column}
+.scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-        header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
+/* ===== INTRO ===== */
+#view-intro{background:#000;z-index:2000;font-family:'Share Tech Mono',monospace}
+.scanlines{position:fixed;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.25) 50%);background-size:100% 4px;pointer-events:none;z-index:2005}
+#intro-vid-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3;filter:hue-rotate(180deg) contrast(1.2)}
+#terminal-console{position:absolute;bottom:90px;left:20px;right:20px;color:var(--term-green);text-shadow:0 0 5px var(--term-green)}
+.log-line{margin-bottom:5px;opacity:0;animation:typeIn .1s forwards}
+.log-error{color:var(--term-red)} .log-success{color:var(--cyan)} .log-sys{color:var(--yellow)}
+@keyframes typeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1}}
+#big-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;font-weight:900;opacity:0;pointer-events:none;text-shadow:0 0 20px white}
+.glitch-anim{animation:glitchSkew .3s infinite;color:var(--term-red)}
+@keyframes glitchSkew{
+0%{transform:translate(-50%,-50%) skew(0)}
+25%{transform:translate(-51%,-50%) skew(-8deg)}
+50%{transform:translate(-49%,-51%) skew(8deg)}
+75%{transform:translate(-50%,-49%) skew(0)}
+}
+#start-btn,#skip-btn{position:absolute;z-index:100;font-family:'Fredoka'}
+#start-btn{
+    top:50%;left:50%;transform:translate(-50%,-50%);
+    padding:20px 40px;font-size:2rem;border:none;border-radius:12px;
+    background:var(--pink);color:white;box-shadow:0 0 30px var(--pink);
+    animation:pulse 1.5s infinite
+}
+#skip-btn{top:20px;right:20px;border:1px solid #fff;background:rgba(0,0,0,.5);color:#fff;padding:8px 15px;border-radius:20px;display:none}
 
-        header p {
-            margin-top: 8px;
-            font-weight: normal;
-        }
+/* ===== APP ===== */
+#view-login{background:radial-gradient(circle,#1a1a3e,#0a0f1f);align-items:center;justify-content:center}
+.login-box{
+    background:rgba(15,23,42,.95);border:3px solid var(--cyan);
+    border-radius:20px;padding:40px;text-align:center;width:90%;max-width:400px
+}
+.login-box h1{
+    font-size:3rem;background:linear-gradient(45deg,var(--cyan),var(--pink),var(--purple));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+.input-field{width:100%;padding:15px;margin:20px 0;border-radius:10px;border:2px solid var(--cyan);background:#000;color:#fff;text-align:center;font-size:1.2rem}
+.btn-main{width:100%;padding:15px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--green));font-size:1.4rem;font-weight:900}
 
-        main {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            padding: 30px;
-            max-width: 1200px;
-            margin: auto;
-        }
+/* DASHBOARD */
+#view-dash{padding:20px;align-items:center}
+.header-title{font-size:2.5rem;color:var(--pink);margin:20px 0}
+.rooms-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;max-width:600px}
+.room-card{background:rgba(255,255,255,.05);border:2px solid var(--cyan);border-radius:15px;padding:20px;text-align:center}
+.room-emoji{font-size:3rem}
 
-        section {
-            background: #111;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        }
+/* ROOMS */
+.room-header{display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:2px solid var(--cyan)}
+.room-content{flex:1;padding:20px;display:flex;flex-direction:column;align-items:center}
+.btn{background:var(--cyan);border:none;border-radius:8px;padding:12px 20px;font-weight:bold;margin:5px}
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.9rem;
-            opacity: 0.6;
-        }
-
-        .hint {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            margin-top: 10px;
-            text-align: center;
-        }
-    </style>
+/* EFFECTS */
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+</style>
 </head>
 
 <body>
 
-<header>
-    <h1>🎉 PARTY ARENA</h1>
-    <p>Trivia · Chaos · Achievements · Eskalation</p>
-</header>
+<audio id="intro-music" src="intro-sound.mp3" preload="auto"></audio>
 
-<main>
+<!-- INTRO -->
+<div id="view-intro" class="full-screen">
+    <div class="scanlines"></div>
+    <video id="intro-vid-bg" muted playsinline></video>
+    <div id="terminal-console"></div>
+    <div id="big-overlay"></div>
+    <button id="start-btn" onclick="intro.start()">START THE SHOW 🚀</button>
+    <button id="skip-btn" onclick="intro.skip()">SKIP ⏩</button>
+</div>
 
-    <!-- TRIVIA -->
-    <section>
-        <div id="trivia"></div>
-        <div class="hint">🎯 Schnelligkeit schlägt Wissen</div>
-    </section>
+<!-- LOGIN -->
+<div id="view-login" class="full-screen hidden">
+    <div class="login-box">
+        <h1>🎉 PARTY 🎉</h1>
+        <p style="color:var(--green)">Die offizielle App für René</p>
+        <input id="username" class="input-field" placeholder="Dein Name">
+        <button class="btn-main" onclick="app.login()">LOS GEHT'S 🚀</button>
+    </div>
+</div>
 
-    <!-- PARTY CHAOS -->
-    <section>
-        <div id="party"></div>
-        <div class="hint">🍾 Zufall ist der Boss</div>
-    </section>
+<!-- DASH -->
+<div id="view-dash" class="full-screen hidden scrollable">
+    <div class="header-title">PARTY ZENTRALE</div>
+    <div>Willkommen, <b id="display-name">GAST</b></div>
+    <div class="rooms-grid">
+        <div class="room-card" onclick="app.nav('trivia')"><div class="room-emoji">🧠</div>QUIZ</div>
+        <div class="room-card" onclick="app.nav('bottle')"><div class="room-emoji">🍾</div>FLASCHE</div>
+        <div class="room-card" onclick="app.nav('dance')"><div class="room-emoji">💃</div>DANCE</div>
+        <div class="room-card" onclick="app.nav('leaderboard')"><div class="room-emoji">🏆</div>RANGLISTE</div>
+    </div>
+</div>
 
-</main>
+<!-- TRIVIA -->
+<div id="view-trivia" class="full-screen hidden">
+    <div class="room-header"><button onclick="app.nav('dash')">⬅️</button>QUIZ</div>
+    <div class="room-content">
+        <h2>Punkte: <span id="trivia-score">0</span></h2>
+        <h3 id="trivia-q">?</h3>
+        <div id="trivia-a"></div>
+        <button class="btn" onclick="trivia.next()">Weiter</button>
+    </div>
+</div>
 
-<footer>
-    🚀 Built for Chaos · Hosted on GitHub Pages
-</footer>
+<!-- BOTTLE -->
+<div id="view-bottle" class="full-screen hidden">
+    <div class="room-header"><button onclick="app.nav('dash')">⬅️</button>FLASCHE</div>
+    <div class="room-content">
+        <div id="bottle" style="font-size:6rem">🍾</div>
+        <div id="bottle-res"></div>
+        <button class="btn" onclick="bottle.spin()">DREHEN</button>
+    </div>
+</div>
 
-<!-- MODULE BOOTSTRAP -->
-<script type="module">
-    import { TriviaBattle } from './js/triviaBattle.js';
-    import { PartyChaos } from './js/partyChaos.js';
+<!-- LEADERBOARD -->
+<div id="view-leaderboard" class="full-screen hidden">
+    <div class="room-header"><button onclick="app.nav('dash')">⬅️</button>RANGLISTE</div>
+    <div class="room-content" id="lb-list"></div>
+</div>
 
-    // Systeme initialisieren
-    new TriviaBattle('trivia');
-    new PartyChaos('party');
+<script>
+/* ===== INTRO ===== */
+const intro={
+running:false,
+start(){
+this.running=true;
+document.getElementById('start-btn').style.display='none';
+document.getElementById('skip-btn').style.display='block';
+this.sequence();
+},
+log(t){if(!this.running)return;
+const d=document.createElement('div');
+d.className='log-line';d.innerText='> '+t;
+document.getElementById('terminal-console').appendChild(d);
+},
+sequence:async function(){
+const sleep=m=>new Promise(r=>setTimeout(r,m));
+this.log('BOOTING SYSTEM...');
+await sleep(1500);
+this.log('SYSTEM READY');
+await sleep(1000);
+this.skip();
+},
+skip(){
+this.running=false;
+document.getElementById('view-intro').classList.add('hidden');
+document.getElementById('view-login').classList.remove('hidden');
+}
+};
 
-    console.log('🔥 PARTY ARENA READY');
+/* ===== APP ===== */
+const app={
+user:localStorage.getItem('user')||'',
+scores:JSON.parse(localStorage.getItem('scores'))||[],
+login(){
+const n=document.getElementById('username').value.trim();
+if(!n)return;
+this.user=n;localStorage.setItem('user',n);
+document.getElementById('display-name').innerText=n;
+this.nav('dash');
+},
+nav(v){
+document.querySelectorAll('.full-screen').forEach(e=>e.classList.add('hidden'));
+document.getElementById('view-'+v).classList.remove('hidden');
+if(v==='leaderboard')this.updateLB();
+},
+addScore(p){
+let s=this.scores.find(x=>x.u===this.user);
+if(s)s.p+=p;else this.scores.push({u:this.user,p});
+localStorage.setItem('scores',JSON.stringify(this.scores));
+},
+updateLB(){
+document.getElementById('lb-list').innerHTML=
+this.scores.sort((a,b)=>b.p-a.p)
+.map((x,i)=>`<div>#${i+1} ${x.u} – ${x.p}</div>`).join('');
+}
+};
+
+/* ===== TRIVIA ===== */
+const trivia={
+q:[
+{q:'Alter von René?',a:['20','25','29','Egal'],c:2},
+{q:'Bester Cousin?',a:['DoN','DoN','DoN','DoN'],c:0}
+],i:0,score:0,
+next(){
+const x=this.q[this.i++%this.q.length];
+document.getElementById('trivia-q').innerText=x.q;
+document.getElementById('trivia-a').innerHTML=
+x.a.map((t,i)=>`<button class="btn" onclick="trivia.check(${i},${x.c})">${t}</button>`).join('');
+},
+check(i,c){
+if(i===c){this.score+=50;app.addScore(50);}
+document.getElementById('trivia-score').innerText=this.score;
+setTimeout(()=>this.next(),600);
+}
+}; trivia.next();
+
+/* ===== BOTTLE ===== */
+const bottle={
+spin(){
+const el=document.getElementById('bottle');
+el.style.transform=`rotate(${720+Math.random()*720}deg)`;
+setTimeout(()=>{
+document.getElementById('bottle-res').innerText=
+['Trink!','Tanz!','Sing!'][Math.floor(Math.random()*3)];
+app.addScore(20);
+},2500);
+}
+};
+
+if(app.user)document.getElementById('display-name').innerText=app.user;
 </script>
-
 </body>
 </html>
