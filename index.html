@@ -3,418 +3,593 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>René OS - Global Party v7</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=VT323&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <title>RENÉ PARTY v8 - ULTIMATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-blue: #00f2ea;
-            --neon-pink: #ff0050;
-            --bg-dark: #020617;
-            --pad-off: #1e293b;
+            --cyan: #00f2ea;
+            --pink: #ff0050;
+            --purple: #b026ff;
+            --green: #39ff14;
+            --yellow: #ffee00;
+            --dark: #0a0f1f;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            background: linear-gradient(135deg, #050810 0%, var(--dark) 100%);
+            font-family: 'Fredoka', sans-serif;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* UTILS */
         .hidden { display: none !important; }
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; overflow: hidden; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; overflow: hidden; display: flex; flex-direction: column; }
         .scrollable { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-        /* INTRO & LOGIN Styles (kompakt) */
-        #video-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.4; filter: contrast(1.2) brightness(0.8) hue-rotate(180deg); }
-        #view-intro { background: #000; display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        #terminal-layer { position: absolute; z-index: 2; padding: 20px; font-family: 'VT323', monospace; color: #0f0; font-size: 1.5rem; text-shadow: 0 0 5px #0f0; bottom: 15%; width: 100%; pointer-events: none; }
-        .terminal-line { margin-bottom: 5px; opacity: 0; animation: fadeIn 0.1s forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
-        #start-btn { z-index: 10; padding: 15px 30px; font-family: 'Bangers'; font-size: 1.8rem; background: var(--neon-pink); color: white; border: none; border-radius: 10px; animation: pulse 1.5s infinite; cursor: pointer; }
-        #skip-btn { position: absolute; top: 20px; right: 20px; z-index: 20; background: rgba(0,0,0,0.5); border: 1px solid white; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: none; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        #view-login { z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: #0f172a; padding: 2rem; border-radius: 1rem; border: 1px solid var(--neon-blue); text-align: center; width: 85%; max-width: 350px; }
-        .input-field { width: 100%; padding: 12px; margin: 15px 0; background: #020617; border: 1px solid #334155; color: white; text-align: center; font-size: 1.1rem; border-radius: 8px; }
-        .btn-main { width: 100%; padding: 12px; background: var(--neon-blue); color: black; font-family: 'Bangers'; font-size: 1.4rem; border-radius: 8px; border:none; }
+        /* ANIMATIONS */
+        @keyframes micBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-        /* UI HEADER & DASH */
-        .app-header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: rgba(2,6,23,0.95); border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 50; }
-        .back-btn { background: none; color: white; font-size: 1.5rem; border: none; padding: 10px; }
-        .title { font-family: 'Bangers'; font-size: 1.5rem; letter-spacing: 1px; }
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; max-width: 600px; margin: 0 auto; }
-        .app-icon { background: #0f172a; border: 1px solid #333; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; gap: 10px; text-align: center; height: 140px;}
-        .icon-emoji { font-size: 2.5rem; }
+        /* LOGIN STYLE */
+        #view-login {
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            background: radial-gradient(circle, #1a1a3e 0%, #0a0f1f 100%);
+        }
 
-        /* SNAKE LEADERBOARD */
-        #snake-leaderboard { margin-top: 20px; padding: 10px; width: 100%; max-width: 300px; background: #111; border-radius: 10px; border: 1px solid #333; }
-        .score-entry { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
-        .score-entry:first-child { color: var(--neon-blue); font-weight: bold; font-size: 1rem; }
+        .login-box {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--cyan);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 30px rgba(0, 242, 234, 0.3);
+        }
 
-        /* ToD FEED STYLES */
-        .tod-card { background: #1e293b; margin: 15px; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #444; }
-        .tod-feed { padding: 15px; padding-bottom: 100px; }
-        .feed-item { background: #0f172a; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 10px; animation: fadeIn 0.3s; }
-        .feed-header { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between;}
-        .feed-question { font-weight: bold; color: var(--neon-blue); margin-bottom: 5px; font-style: italic;}
-        .feed-answer { font-size: 1.1rem; color: white; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #333; }
-        .feed-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        .badge-w { background: var(--neon-blue); color: black; }
-        .badge-p { background: var(--neon-pink); color: white; }
+        .login-box h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, var(--cyan), var(--pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
 
-        /* CHAT & GENERAL LISTS */
-        #chat-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 70px; }
-        .msg { padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 0.9rem; word-wrap: break-word;}
-        .mine { align-self: flex-end; background: var(--neon-blue); color: black; }
-        .others { align-self: flex-start; background: #334155; }
-        .chat-input-area { position: fixed; bottom: 0; width: 100%; padding: 10px; background: var(--bg-dark); display: flex; gap: 8px; border-top: 1px solid #333; }
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--cyan);
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            border: none;
+            border-radius: 10px;
+            color: black;
+            font-weight: 900;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 242, 234, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        /* DASHBOARD STYLE */
+        #view-dash {
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            text-align: center;
+            color: var(--pink);
+            text-shadow: 0 0 10px var(--pink);
+            margin-top: 20px;
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            color: var(--green);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            padding-bottom: 50px;
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--cyan);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px;
+        }
+
+        .room-card:active { transform: scale(0.95); background: rgba(0, 242, 234, 0.1); }
+        .room-emoji { font-size: 3rem; margin-bottom: 10px; }
+        .room-name { font-weight: bold; color: var(--cyan); font-size: 1rem; }
+        .room-desc { font-size: 0.8rem; color: #aaa; }
+
+        /* COMMON ROOM STYLES */
+        .room-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--cyan);
+        }
+        .back-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; }
+        .room-title { font-size: 1.5rem; font-weight: bold; color: white; }
+        .room-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         
-        /* Studio & Art (Compact) */
-        .dj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; max-height: 60vh; }
-        .pad { aspect-ratio: 1; background: var(--pad-off); border: 2px solid #334155; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .pad:active { background: #334155; border-color: white; transform: scale(0.95); }
-        .p-kick { border-bottom: 3px solid #ff0050; } .p-snare { border-bottom: 3px solid #00f2ea; } .p-bass { border-bottom: 3px solid #ffee00; }
-        #gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px; overflow-y: auto; padding-bottom: 100px;}
-        .gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; border: 1px solid #333; }
+        .btn {
+            background: var(--cyan);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: black;
+            font-weight: bold;
+            font-size: 1rem;
+            margin: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn:active { transform: scale(0.95); }
+
+        /* KARAOKE */
+        .song-display {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--yellow);
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .lyrics { white-space: pre-wrap; line-height: 1.6; font-size: 1.1rem; margin-top: 15px; }
+
+        /* PHOTOBOOTH */
+        .camera-view {
+            width: 100%; max-width: 350px; aspect-ratio: 1;
+            background: #000; border: 3px solid var(--pink);
+            border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 5rem; margin-bottom: 20px;
+        }
+        .filter-btn { font-size: 1.5rem; background: #222; border: 2px solid #555; border-radius: 50%; width: 50px; height: 50px; margin: 5px; cursor: pointer; }
+        .filter-btn.active { border-color: var(--cyan); background: var(--cyan); }
+
+        /* TRIVIA */
+        .question-card {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--cyan);
+            padding: 20px; border-radius: 10px; width: 100%; max-width: 500px;
+            text-align: center; margin-bottom: 20px;
+        }
+        .answer-btn {
+            width: 100%; padding: 15px; margin: 5px 0;
+            background: rgba(0,0,0,0.5); border: 2px solid var(--pink);
+            color: white; border-radius: 8px; font-size: 1rem; cursor: pointer;
+        }
+        .answer-btn.correct { background: var(--green); color: black; border-color: var(--green); }
+        .answer-btn.wrong { background: red; border-color: red; }
+
+        /* BOTTLE */
+        .bottle { font-size: 8rem; margin: 40px 0; transition: transform 3s ease-out; }
+        .spinner-text { font-size: 1.5rem; color: var(--yellow); text-align: center; min-height: 80px; }
+
+        /* DANCEFLOOR */
+        .dancefloor-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            width: 100%; max-width: 400px; margin-top: 20px;
+        }
+        .pad {
+            aspect-ratio: 1; background: #222; border: 2px solid var(--cyan);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; cursor: pointer;
+        }
+        .pad:active { background: var(--cyan); color: black; box-shadow: 0 0 20px var(--cyan); }
+
+        /* LEADERBOARD */
+        .leaderboard-entry {
+            background: rgba(255,255,255,0.1); width: 100%; max-width: 500px;
+            padding: 10px; margin: 5px 0; border-radius: 5px;
+            display: flex; justify-content: space-between; border-left: 4px solid var(--yellow);
+        }
     </style>
 </head>
 <body>
 
-    <audio id="intro-music" src="intro-sound.mp3" preload="auto"></audio>
-
-    <div id="view-intro" class="full-screen">
-        <video id="video-layer" muted playsinline></video>
-        <div id="terminal-layer"></div>
-        <button id="start-btn" onclick="app.startShow()">TAP TO START 🚀</button>
-        <button id="skip-btn" onclick="app.endIntro()">SKIP ⏩</button>
-    </div>
-
-    <div id="view-login" class="full-screen hidden">
+    <div id="view-login" class="full-screen">
         <div class="login-box">
-            <h1 style="font-family: 'Bangers'; font-size: 2.5rem; margin-bottom: 5px;">RENÉ OS <span style="color:var(--neon-pink)">v7.0</span></h1>
-            <p style="margin-bottom:15px; opacity:0.7; font-size:0.9rem;">Global Party Edition</p>
+            <h1>🎉 PARTY 🎉</h1>
+            <p style="color: var(--green); margin-bottom: 20px;">Die offizielle App für René</p>
             <input type="text" id="username" class="input-field" placeholder="Dein Name..." maxlength="12">
-            <button class="btn-main" onclick="app.login()">EINTRETEN 🌍</button>
+            <button class="btn-main" onclick="app.login()">LOS GEHT'S 🚀</button>
         </div>
     </div>
 
     <div id="view-dash" class="full-screen hidden scrollable">
-        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
-            <h2 style="font-family: 'Bangers'; letter-spacing: 1px;">STATUS: <span style="color:#0f0">CONNECTED</span></h2>
-            <p style="font-size: 0.9rem;">User: <span id="display-name" style="color:var(--neon-blue); font-weight:bold;">GAST</span></p>
-        </div>
-        <div class="dash-grid">
-            <div class="app-icon" onclick="app.nav('chat')"><div class="icon-emoji">💬</div><div class="icon-title">Chat</div></div>
-            <div class="app-icon" onclick="app.nav('tod')"><div class="icon-emoji">🎲</div><div class="icon-title">Wahrheit/Pflicht</div></div>
-            <div class="app-icon" onclick="app.nav('snake')"><div class="icon-emoji">🐍</div><div class="icon-title">Snake Liga</div></div>
-            <div class="app-icon" onclick="app.nav('dj')"><div class="icon-emoji">🎛️</div><div class="icon-title">Studio</div></div>
-            <div class="app-icon" onclick="app.nav('art')"><div class="icon-emoji">🎨</div><div class="icon-title">Picasso</div></div>
-        </div>
-    </div>
-
-    <div id="view-chat" class="full-screen hidden">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">CHAT</div><div style="width:40px"></div></div>
-        <div id="chat-list"></div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-msg" style="flex:1; padding:10px; border-radius:20px; border:none;" placeholder="...">
-            <button onclick="app.chat.send()" style="background:var(--neon-pink); width:40px; height:40px; border-radius:50%; border:none;">➤</button>
-        </div>
-    </div>
-
-    <div id="view-tod" class="full-screen hidden scrollable">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">PARTY FEED</div><div style="width:40px"></div></div>
+        <div class="header-title">PARTY ZENTRALE</div>
+        <div class="header-subtitle">Willkommen, <span id="display-name" style="font-weight:bold; color:white;">GAST</span>!</div>
         
-        <div class="tod-card">
-            <h3 style="margin-bottom:10px;">Zieh eine Karte!</h3>
-            <div id="tod-active-area" style="display:none;">
-                <div id="tod-type-badge" class="feed-badge badge-w" style="font-size:1.2rem; display:inline-block; margin-bottom:10px;">WAHRHEIT</div>
-                <div id="tod-question" style="font-size:1.2rem; font-weight:bold; margin-bottom:15px;">Frage...</div>
-                <input type="text" id="tod-answer-input" class="input-field" placeholder="Deine Antwort / Beweis..." style="margin: 10px 0;">
-                <button onclick="app.tod.post()" class="btn-main" style="font-size:1rem; padding:10px;">ANTWORT POSTEN 📝</button>
-            </div>
-            
-            <div id="tod-buttons" style="display:flex; gap:10px; justify-content:center;">
-                <button onclick="app.tod.spin('wahrheit')" style="padding:15px; background:var(--neon-blue); border:none; border-radius:10px; flex:1; font-weight:bold;">WAHRHEIT</button>
-                <button onclick="app.tod.spin('pflicht')" style="padding:15px; background:var(--neon-pink); border:none; border-radius:10px; flex:1; font-weight:bold; color:white;">PFLICHT</button>
-            </div>
-        </div>
-
-        <h4 style="margin-left:15px; color:#aaa;">FEED (Was die anderen sagen):</h4>
-        <div id="tod-feed" class="tod-feed">
-            </div>
-    </div>
-
-    <div id="view-snake" class="full-screen hidden" style="background:#000; overflow-y:auto;">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash'); app.snake.stop();">⬅️</button><div class="title">SNAKE LIGA</div><div style="width:40px"></div></div>
-        <div style="display:flex; flex-direction:column; align-items:center; padding:10px;">
-            <div>Score: <span id="snake-score" style="color:var(--neon-pink)">0</span></div>
-            <canvas id="snake-canvas" width="300" height="300" style="background:#111; border:2px solid var(--neon-blue); margin:10px 0;"></canvas>
-            
-            <button onclick="app.snake.start()" style="margin-bottom:15px; padding: 10px 30px; background:var(--neon-blue); border:none; border-radius:5px; font-weight:bold;">START GAME</button>
-            
-            <div class="game-controls" style="display:flex; gap:15px; margin-bottom:20px;">
-                <button style="width:50px; height:50px; background:#333; border-radius:50%; color:white; border:none;" onclick="app.snake.dir('left')">⬅️</button>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button style="width:50px; height:50px; background:#333; border-radius:50%; color:white; border:none;" onclick="app.snake.dir('up')">⬆️</button>
-                    <button style="width:50px; height:50px; background:#333; border-radius:50%; color:white; border:none;" onclick="app.snake.dir('down')">⬇️</button>
+        <div style="display: flex; justify-content: center;">
+            <div class="rooms-grid">
+                <div class="room-card" onclick="app.enterRoom('karaoke')">
+                    <div class="room-emoji">🎤</div>
+                    <div class="room-name">KARAOKE</div>
+                    <div class="room-desc">Sing für René</div>
                 </div>
-                <button style="width:50px; height:50px; background:#333; border-radius:50%; color:white; border:none;" onclick="app.snake.dir('right')">➡️</button>
+                <div class="room-card" onclick="app.enterRoom('photobooth')">
+                    <div class="room-emoji">📸</div>
+                    <div class="room-name">FOTO BOX</div>
+                    <div class="room-desc">Lustige Selfies</div>
+                </div>
+                <div class="room-card" onclick="app.enterRoom('trivia')">
+                    <div class="room-emoji">🧠</div>
+                    <div class="room-name">QUIZ</div>
+                    <div class="room-desc">Kennst du René?</div>
+                </div>
+                <div class="room-card" onclick="app.enterRoom('bottle')">
+                    <div class="room-emoji">🍾</div>
+                    <div class="room-name">FLASCHE</div>
+                    <div class="room-desc">Wahrheit/Pflicht</div>
+                </div>
+                <div class="room-card" onclick="app.enterRoom('dancefloor')">
+                    <div class="room-emoji">💃</div>
+                    <div class="room-name">DANCEFLOOR</div>
+                    <div class="room-desc">Bau den Beat</div>
+                </div>
+                <div class="room-card" onclick="app.enterRoom('leaderboard')">
+                    <div class="room-emoji">🏆</div>
+                    <div class="room-name">RANGLISTE</div>
+                    <div class="room-desc">Wer ist King?</div>
+                </div>
             </div>
-
-            <h3 style="color:var(--neon-pink)">🏆 WELTRANGLISTE 🏆</h3>
-            <div id="snake-leaderboard">Loading...</div>
         </div>
     </div>
 
-    <div id="view-dj" class="full-screen hidden" style="display:flex; flex-direction:column;">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">STUDIO</div><div style="width:40px"></div></div>
-        <div class="dj-grid">
-            <div class="pad p-kick" onclick="app.studio.hit('kick')">🥁</div><div class="pad p-snare" onclick="app.studio.hit('snare')">👏</div><div class="pad p-snare" onclick="app.studio.hit('hat')">🐍</div>
-            <div class="pad p-bass" onclick="app.studio.hit('bass1')">A1</div><div class="pad p-bass" onclick="app.studio.hit('bass2')">C2</div><div class="pad p-bass" onclick="app.studio.hit('bass3')">D2</div>
-            <div class="pad p-kick" onclick="app.studio.hit('laser')">🔫</div><div class="pad p-snare" onclick="app.studio.hit('horn')">📢</div><div class="pad p-bass" onclick="app.studio.hit('yeah')">🗣️</div>
+    <div id="view-karaoke" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">KARAOKE</div>
+            <div style="width:40px;"></div>
         </div>
-        <div style="padding:10px; text-align:center; color:#aaa; font-size:0.8rem;">Jeder Beat wird live übertragen!</div>
+        <div class="room-content">
+            <div style="font-size: 4rem; animation: micBounce 1s infinite alternate;">🎤</div>
+            <div class="song-display">
+                <h2 id="song-name" style="color:var(--yellow); margin-bottom:10px;">Happy Birthday</h2>
+                <div id="lyrics" class="lyrics">Happy birthday to you...</div>
+            </div>
+            <button class="btn" onclick="karaoke.nextSong()">⏭️ NÄCHSTER SONG</button>
+        </div>
     </div>
 
-    <div id="view-art" class="full-screen hidden" style="display:flex; flex-direction:column;">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">ART</div><button onclick="app.art.clear()" style="font-size:0.8rem; background:none; color:red; border:none;">Clear</button></div>
-        <div style="padding:10px; text-align:center; background:#222;">
-            <canvas id="canvas" style="background:white; border-radius:8px; width:100%; height:300px; touch-action:none;"></canvas>
-            <br><button onclick="app.art.save()" style="margin-top:10px; background:var(--neon-blue); padding:10px 30px; border-radius:20px; font-weight:bold; border:none;">POSTEN</button>
+    <div id="view-photobooth" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">FOTO BOX</div>
+            <div style="width:40px;"></div>
         </div>
-        <div id="gallery-grid"></div>
+        <div class="room-content">
+            <div id="camera-display" class="camera-view">📸</div>
+            <div style="margin-bottom:20px;">
+                <button class="filter-btn active" onclick="photobooth.setFilter('😊')">😊</button>
+                <button class="filter-btn" onclick="photobooth.setFilter('😎')">😎</button>
+                <button class="filter-btn" onclick="photobooth.setFilter('🤡')">🤡</button>
+                <button class="filter-btn" onclick="photobooth.setFilter('👽')">👽</button>
+            </div>
+            <button class="btn" onclick="photobooth.takePic()" style="width:200px; font-size:1.2rem;">FOTO MACHEN ✨</button>
+            <div id="photo-gallery" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 20px; width:100%; max-width:400px;"></div>
+        </div>
+    </div>
+
+    <div id="view-trivia" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">QUIZ</div>
+            <div style="width:40px;"></div>
+        </div>
+        <div class="room-content">
+            <h2 style="color:var(--yellow)">Punkte: <span id="trivia-score">0</span></h2>
+            <div class="question-card">
+                <h3 id="trivia-question" style="margin-bottom:20px;">Frage lädt...</h3>
+                <div id="trivia-answers"></div>
+            </div>
+            <button class="btn" onclick="trivia.nextQuestion()">ÜBERSPRINGEN ⏩</button>
+        </div>
+    </div>
+
+    <div id="view-bottle" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">FLASCHENDREHEN</div>
+            <div style="width:40px;"></div>
+        </div>
+        <div class="room-content">
+            <div id="bottle" class="bottle">🍾</div>
+            <div id="spinner-text" class="spinner-text">Drück den Button!</div>
+            <button class="btn" onclick="bottle.spin()" style="padding: 20px 40px; font-size: 1.5rem; margin-top:20px;">DREHEN 🌀</button>
+        </div>
+    </div>
+
+    <div id="view-dancefloor" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">DANCEFLOOR</div>
+            <div style="width:40px;"></div>
+        </div>
+        <div class="room-content">
+            <h3 style="color:var(--cyan); margin-bottom:10px;">PRODUCER MODE</h3>
+            <div class="dancefloor-grid">
+                <div class="pad" onmousedown="dancefloor.hit('kick')" ontouchstart="dancefloor.hit('kick')">🥁</div>
+                <div class="pad" onmousedown="dancefloor.hit('snare')" ontouchstart="dancefloor.hit('snare')">👏</div>
+                <div class="pad" onmousedown="dancefloor.hit('hat')" ontouchstart="dancefloor.hit('hat')">🐍</div>
+                <div class="pad" onmousedown="dancefloor.hit('bass1')" ontouchstart="dancefloor.hit('bass1')">🎸</div>
+                <div class="pad" onmousedown="dancefloor.hit('bass2')" ontouchstart="dancefloor.hit('bass2')">🎻</div>
+                <div class="pad" onmousedown="dancefloor.hit('laser')" ontouchstart="dancefloor.hit('laser')">🔫</div>
+            </div>
+            <p style="margin-top:20px; color:#aaa;">Tippe auf die Pads!</p>
+        </div>
+    </div>
+
+    <div id="view-leaderboard" class="full-screen hidden">
+        <div class="room-header">
+            <button class="back-btn" onclick="app.backToDash()">⬅️</button>
+            <div class="room-title">RANGLISTE</div>
+            <div style="width:40px;"></div>
+        </div>
+        <div class="room-content">
+            <div id="leaderboard-list" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+        </div>
     </div>
 
     <script>
-        const videos = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4']; 
-        // GLOBAL SYNC DATABASE
-        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const db = gun.get('rene-party-v7-global'); 
-
+        // --- AUDIO ENGINE ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        
+        // --- APP LOGIC ---
         const app = {
             user: localStorage.getItem('user') || '',
-            isIntroRunning: false,
-            
-            init: () => {
-                if(app.user) {
-                    document.getElementById('username').value = app.user;
-                    document.getElementById('display-name').innerText = app.user;
-                }
-                app.chat.listen(); 
-                app.art.listen();
-                app.snake.listenScores();
-                app.tod.listenFeed();
-            },
-            startShow: () => {
-                document.getElementById('start-btn').style.display = 'none';
-                document.getElementById('skip-btn').style.display = 'block';
-                app.isIntroRunning = true;
-                const audio = document.getElementById('intro-music');
-                audio.volume = 1.0; audio.play().catch(e => console.log("Audio Error"));
-                const vidEl = document.getElementById('video-layer');
-                let vidIdx = 0;
-                function playNextVideo() { if(!app.isIntroRunning) return; vidEl.src = videos[vidIdx]; vidEl.play(); vidIdx = (vidIdx + 1) % videos.length; }
-                vidEl.onended = playNextVideo; playNextVideo();
-                app.typeWriter();
-            },
-            endIntro: () => {
-                app.isIntroRunning = false;
-                const audio = document.getElementById('intro-music'); audio.pause(); audio.currentTime = 0;
-                document.getElementById('view-intro').classList.add('hidden');
-                document.getElementById('view-login').classList.remove('hidden');
-            },
-            typeWriter: () => {
-                const lines = ["> Global Connection... OK", "> Multiplayer Sync... OK", "> Social Feed... OK", "> Happy Birthday René!", "> Have Fun!"];
-                let i = 0; const terminal = document.getElementById('terminal-layer');
-                function nextLine() {
-                    if (!app.isIntroRunning) return;
-                    if (i < lines.length) {
-                        const div = document.createElement('div'); div.className = 'terminal-line'; div.innerText = lines[i];
-                        terminal.appendChild(div); terminal.scrollTop = terminal.scrollHeight; i++;
-                        setTimeout(nextLine, 1500); 
-                    } else { setTimeout(() => { if(app.isIntroRunning) app.endIntro(); }, 1500); }
-                }
-                nextLine();
-            },
+            scores: JSON.parse(localStorage.getItem('scores')) || [],
+
             login: () => {
                 const name = document.getElementById('username').value.trim();
-                if(!name) return alert("Name fehlt!");
-                app.user = name; localStorage.setItem('user', name);
+                if (!name) return alert('Bitte gib einen Namen ein!');
+                app.user = name;
+                localStorage.setItem('user', name);
                 document.getElementById('display-name').innerText = name;
+                
+                // Audio Context starten (User Interaction required)
+                if (ctx.state === 'suspended') ctx.resume();
+                
                 app.nav('dash');
             },
+
             nav: (view) => {
                 document.querySelectorAll('.full-screen').forEach(el => el.classList.add('hidden'));
-                if(view === 'intro') return; 
                 document.getElementById('view-' + view).classList.remove('hidden');
+                if(view === 'dash') app.updateLeaderboard();
             },
 
-            // --- CHAT ---
-            chat: {
-                send: () => {
-                    const txt = document.getElementById('chat-msg').value; if(!txt) return;
-                    db.get('chat').set({ text: txt, author: app.user, time: Date.now() }); document.getElementById('chat-msg').value = '';
-                },
-                listen: () => {
-                    db.get('chat').map().once((data, id) => {
-                        if(!data || document.getElementById(id)) return;
-                        const div = document.createElement('div'); div.id = id; div.className = `msg ${data.author === app.user ? 'mine' : 'others'}`;
-                        div.innerHTML = `<b>${data.author}:</b> ${data.text}`;
-                        const list = document.getElementById('chat-list'); list.appendChild(div); list.scrollTop = list.scrollHeight;
-                    });
+            enterRoom: (room) => app.nav(room),
+            backToDash: () => app.nav('dash'),
+
+            addScore: (points) => {
+                // Check if user already has score, update it
+                const existing = app.scores.find(s => s.user === app.user);
+                if(existing) {
+                    existing.points += points;
+                } else {
+                    app.scores.push({ user: app.user, points: points });
                 }
+                localStorage.setItem('scores', JSON.stringify(app.scores));
             },
 
-            // --- WAHRHEIT ODER PFLICHT (FEED) ---
-            tod: {
-                currentQ: "",
-                currentType: "",
-                truths: ["Wann hast du das letzte Mal gelogen?", "Wer ist dein Lieblingscousin?", "Was ist dein peinlichstes Foto?", "Würdest du für 1 Mio auf Internet verzichten?", "Was nervt dich an DoN am meisten?", "Welches Geheimnis kennt niemand?"],
-                dares: ["Mach 10 Liegestütze und poste ein Foto!", "Sing ein Lied für René (Video)!", "Zeig dein letztes Foto im Handy!", "Mach einen Moonwalk!", "Lass dich 30sek kitzeln!"],
-                
-                spin: (type) => {
-                    const list = type === 'wahrheit' ? app.tod.truths : app.tod.dares;
-                    app.tod.currentQ = list[Math.floor(Math.random() * list.length)];
-                    app.tod.currentType = type;
-                    
-                    document.getElementById('tod-buttons').style.display = 'none';
-                    document.getElementById('tod-active-area').style.display = 'block';
-                    
-                    const badge = document.getElementById('tod-type-badge');
-                    badge.innerText = type.toUpperCase();
-                    badge.className = `feed-badge ${type==='wahrheit'?'badge-w':'badge-p'}`;
-                    document.getElementById('tod-question').innerText = app.tod.currentQ;
-                    document.getElementById('tod-answer-input').value = "";
-                },
-                post: () => {
-                    const ans = document.getElementById('tod-answer-input').value;
-                    if(!ans) return alert("Schreib eine Antwort oder 'Erledigt'!");
-                    
-                    // Save to cloud
-                    db.get('tod-feed').set({
-                        author: app.user,
-                        type: app.tod.currentType,
-                        question: app.tod.currentQ,
-                        answer: ans,
-                        time: Date.now()
-                    });
-
-                    // Reset UI
-                    document.getElementById('tod-active-area').style.display = 'none';
-                    document.getElementById('tod-buttons').style.display = 'flex';
-                },
-                listenFeed: () => {
-                    db.get('tod-feed').map().once((data, id) => {
-                        if(!data || document.getElementById(id)) return;
-                        const div = document.createElement('div');
-                        div.id = id; div.className = 'feed-item';
-                        div.innerHTML = `
-                            <div class="feed-header">
-                                <span>${data.author}</span>
-                                <span class="feed-badge ${data.type==='wahrheit'?'badge-w':'badge-p'}">${data.type.toUpperCase()}</span>
-                            </div>
-                            <div class="feed-question">${data.question}</div>
-                            <div class="feed-answer">${data.answer}</div>
-                        `;
-                        document.getElementById('tod-feed').prepend(div);
-                    });
-                }
-            },
-
-            // --- SNAKE (LEADERBOARD) ---
-            snake: {
-                gameLoop: null, snake: [], food: {}, dir: 'right', score: 0,
-                allScores: [], // Local cache for sorting
-                start: () => {
-                    if(app.snake.gameLoop) clearInterval(app.snake.gameLoop);
-                    app.snake.snake = [{x:10, y:10}, {x:9, y:10}, {x:8, y:10}];
-                    app.snake.food = {x:15, y:15}; app.snake.dir = 'right'; app.snake.score = 0;
-                    document.getElementById('snake-score').innerText = 0;
-                    app.snake.gameLoop = setInterval(app.snake.update, 150);
-                },
-                stop: () => { 
-                    if(app.snake.gameLoop) {
-                        clearInterval(app.snake.gameLoop);
-                        app.snake.gameLoop = null;
-                        if(app.snake.score > 0) {
-                            const date = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            db.get('snake-scores').set({
-                                name: app.user,
-                                score: app.snake.score,
-                                date: date
-                            });
-                            alert("Game Over! Score gespeichert.");
-                        }
-                    }
-                },
-                dir: (d) => {
-                    const cur = app.snake.dir;
-                    if(d=='left' && cur!='right') app.snake.dir = 'left';
-                    if(d=='right' && cur!='left') app.snake.dir = 'right';
-                    if(d=='up' && cur!='down') app.snake.dir = 'up';
-                    if(d=='down' && cur!='up') app.snake.dir = 'down';
-                },
-                update: () => {
-                    const cvs = document.getElementById('snake-canvas'); const ctx = cvs.getContext('2d');
-                    const cw = cvs.width/20; const ch = cvs.height/20;
-                    let head = {x: app.snake.snake[0].x, y: app.snake.snake[0].y};
-                    if(app.snake.dir == 'right') head.x++; else if(app.snake.dir == 'left') head.x--;
-                    else if(app.snake.dir == 'up') head.y--; else if(app.snake.dir == 'down') head.y++;
-                    
-                    if(head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || app.snake.snake.some(s => s.x == head.x && s.y == head.y)) {
-                        app.snake.stop(); return;
-                    }
-                    app.snake.snake.unshift(head);
-                    if(head.x == app.snake.food.x && head.y == app.snake.food.y) {
-                        app.snake.score++; document.getElementById('snake-score').innerText = app.snake.score;
-                        app.snake.food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
-                    } else { app.snake.snake.pop(); }
-                    
-                    ctx.fillStyle = '#111'; ctx.fillRect(0,0,300,300);
-                    ctx.fillStyle = '#0f0'; app.snake.snake.forEach(s => ctx.fillRect(s.x*15, s.y*15, 14, 14));
-                    ctx.fillStyle = '#f00'; ctx.fillRect(app.snake.food.x*15, app.snake.food.y*15, 14, 14);
-                },
-                listenScores: () => {
-                    db.get('snake-scores').map().once((data, id) => {
-                        if(!data) return;
-                        app.snake.allScores.push(data);
-                        // Sortieren und Anzeigen
-                        app.snake.allScores.sort((a, b) => b.score - a.score);
-                        const top10 = app.snake.allScores.slice(0, 10);
-                        
-                        let html = '';
-                        top10.forEach((s, i) => {
-                            html += `<div class="score-entry"><span>#${i+1} ${s.name}</span><span>${s.score} Pkt</span></div>`;
-                        });
-                        document.getElementById('snake-leaderboard').innerHTML = html;
-                    });
-                }
-            },
-
-            // --- STUDIO & ART (Simple) ---
-            studio: {
-                hit: (sound) => { 
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const ctx = new AudioContext();
-                    const osc = ctx.createOscillator(); const g = ctx.createGain();
-                    osc.connect(g); g.connect(ctx.destination);
-                    if(sound.includes('bass')) osc.type='sawtooth'; else osc.type='sine';
-                    osc.frequency.value = 200 + Math.random()*200;
-                    osc.start(); osc.stop(ctx.currentTime+0.2);
-                }
-            },
-            art: {
-                canvas: document.getElementById('canvas'), ctx: document.getElementById('canvas').getContext('2d'), isDrawing: false,
-                setup: () => {
-                    const c = app.art.canvas; const ctx = app.art.ctx;
-                    c.width = c.offsetWidth; c.height = c.offsetHeight;
-                    const getPos = (e) => { const r = c.getBoundingClientRect(); return { x: (e.touches?e.touches[0].clientX:e.clientX)-r.left, y: (e.touches?e.touches[0].clientY:e.clientY)-r.top }; };
-                    const start = () => { app.art.isDrawing = true; ctx.beginPath(); }; const end = () => app.art.isDrawing = false;
-                    const draw = (e) => { if(!app.art.isDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineWidth=3; ctx.lineCap='round'; ctx.lineTo(p.x, p.y); ctx.stroke(); };
-                    c.addEventListener('mousedown', start); c.addEventListener('mousemove', draw); c.addEventListener('mouseup', end);
-                    c.addEventListener('touchstart', start); c.addEventListener('touchmove', draw); c.addEventListener('touchend', end);
-                },
-                clear: () => { const c = app.art.canvas; app.art.ctx.clearRect(0,0,c.width,c.height); },
-                save: () => { const d = app.art.canvas.toDataURL('image/jpeg', 0.5); db.get('gallery').set({ img: d, author: app.user }); app.art.clear(); alert("Gesendet!"); },
-                listen: () => { db.get('gallery').map().once((data, id) => { if(!data || document.getElementById(id)) return; const i = document.createElement('img'); i.src = data.img; i.className = 'gallery-img'; i.id = id; document.getElementById('gallery-grid').prepend(i); }); }
+            updateLeaderboard: () => {
+                const sorted = [...app.scores].sort((a, b) => b.points - a.points);
+                let html = '';
+                sorted.forEach((s, i) => {
+                    html += `<div class="leaderboard-entry">
+                        <span style="font-weight:bold; color:var(--yellow)">#${i+1}</span>
+                        <span style="color:white">${s.user}</span>
+                        <span style="color:var(--green)">${s.points} Pkt</span>
+                    </div>`;
+                });
+                document.getElementById('leaderboard-list').innerHTML = html || '<p style="color:#aaa">Noch keine Punkte!</p>';
             }
         };
-        app.art.setup(); app.init();
+
+        // --- KARAOKE ---
+        const karaoke = {
+            songs: [
+                { name: 'Happy Birthday', lyrics: 'Happy birthday to you\nHappy birthday to you\nHappy birthday lieber René\nHappy birthday to you! 🎵' },
+                { name: 'Atemlos', lyrics: 'Atemlos durch die Nacht\nBis ein neuer Tag erwacht\nAtemlos einfach raus\nDeine Augen ziehen mich aus! 💃' },
+                { name: 'Griechischer Wein', lyrics: 'Griechischer Wein\nIst so wie das Blut der Erde\nKomm schenk dir ein\nUnd wenn ich dann traurig werde... 🍷' }
+            ],
+            idx: 0,
+            nextSong: () => {
+                karaoke.idx = (karaoke.idx + 1) % karaoke.songs.length;
+                document.getElementById('song-name').innerText = karaoke.songs[karaoke.idx].name;
+                document.getElementById('lyrics').innerText = karaoke.songs[karaoke.idx].lyrics;
+            }
+        };
+
+        // --- PHOTOBOOTH ---
+        const photobooth = {
+            filter: '😊',
+            setFilter: (f) => {
+                photobooth.filter = f;
+                document.getElementById('camera-display').innerText = f;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+            },
+            takePic: () => {
+                const gallery = document.getElementById('photo-gallery');
+                const div = document.createElement('div');
+                div.style.cssText = 'aspect-ratio:1; background:#222; border:1px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:1.5rem;';
+                div.innerText = photobooth.filter;
+                gallery.prepend(div);
+                app.addScore(10);
+                alert("Foto gespeichert! +10 Punkte");
+            }
+        };
+
+        // --- TRIVIA ---
+        const trivia = {
+            questions: [
+                { q: "Wie alt wird René gefühlt?", a: ["18", "25", "29", "100"], c: 2 },
+                { q: "Was ist Renés Lieblingsgetränk?", a: ["Wasser", "Bier", "Red Bull", "Kaffee"], c: 2 },
+                { q: "Wo findet die Party statt?", a: ["Hier", "Mond", "Mars", "Berlin"], c: 0 },
+                { q: "Wer ist der beste DJ?", a: ["DoN", "Guetta", "Avicii", "Tiesto"], c: 0 }
+            ],
+            idx: 0,
+            score: 0,
+            show: () => {
+                const q = trivia.questions[trivia.idx];
+                document.getElementById('trivia-question').innerText = q.q;
+                const div = document.getElementById('trivia-answers');
+                div.innerHTML = '';
+                q.a.forEach((ans, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'answer-btn';
+                    btn.innerText = ans;
+                    btn.onclick = () => trivia.check(i, q.c, btn);
+                    div.appendChild(btn);
+                });
+            },
+            check: (i, c, btn) => {
+                if(i === c) {
+                    btn.classList.add('correct');
+                    trivia.score += 50;
+                    document.getElementById('trivia-score').innerText = trivia.score;
+                    app.addScore(50);
+                    setTimeout(trivia.nextQuestion, 1000);
+                } else {
+                    btn.classList.add('wrong');
+                }
+            },
+            nextQuestion: () => {
+                trivia.idx = (trivia.idx + 1) % trivia.questions.length;
+                trivia.show();
+            }
+        };
+        trivia.show();
+
+        // --- BOTTLE ---
+        const bottle = {
+            spinning: false,
+            tasks: ["Trink einen Shot!", "Mach 10 Liegestütze!", "Umarm den Nachbarn!", "Erzähl einen Witz!", "Mach ein peinliches Selfie!"],
+            spin: () => {
+                if(bottle.spinning) return;
+                bottle.spinning = true;
+                const el = document.getElementById('bottle');
+                const rand = 720 + Math.random() * 720;
+                el.style.transform = `rotate(${rand}deg)`;
+                document.getElementById('spinner-text').innerText = "Dreht sich...";
+                
+                setTimeout(() => {
+                    bottle.spinning = false;
+                    const task = bottle.tasks[Math.floor(Math.random() * bottle.tasks.length)];
+                    document.getElementById('spinner-text').innerText = task;
+                    app.addScore(20);
+                }, 3000);
+            }
+        };
+
+        // --- DANCEFLOOR (SYNTH) ---
+        const dancefloor = {
+            hit: (type) => {
+                if(event) event.preventDefault(); // Stop double fire on touch
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.connect(g);
+                g.connect(ctx.destination);
+                
+                const now = ctx.currentTime;
+                
+                if(type === 'kick') {
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    g.gain.setValueAtTime(1, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if(type === 'snare') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(100, now);
+                    g.gain.setValueAtTime(0.5, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if(type.startsWith('bass')) {
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = type === 'bass1' ? 65 : 110;
+                    g.gain.setValueAtTime(0.3, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else {
+                    // Laser/Hat
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(type==='laser'?800:8000, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+                app.addScore(5);
+            }
+        };
+
+        // Init user display
+        if(app.user) document.getElementById('display-name').innerText = app.user;
+
     </script>
 </body>
 </html>
