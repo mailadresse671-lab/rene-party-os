@@ -33,10 +33,10 @@
         #video-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.3; /* Videos scheinen leicht durch */
+            opacity: 0.4; /* Videos etwas sichtbarer */
             z-index: 1;
             object-fit: cover;
-            filter: contrast(1.2) brightness(0.8) hue-rotate(180deg); /* Matrix Look */
+            filter: contrast(1.2) brightness(0.8) hue-rotate(180deg);
         }
 
         /* Terminal Text Layer */
@@ -46,12 +46,13 @@
             padding: 20px;
             font-family: 'VT323', monospace;
             color: var(--terminal-green);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             text-shadow: 0 0 5px var(--terminal-green);
-            bottom: 20%;
+            bottom: 15%;
             left: 0;
             width: 100%;
             text-align: left;
+            pointer-events: none; /* Klicks gehen durch */
         }
 
         .terminal-line { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.1s forwards; }
@@ -69,15 +70,32 @@
             animation: pulse 1.5s infinite;
             cursor: pointer;
         }
+
+        #skip-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: none; /* Erst anzeigen nach Start */
+        }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- MAIN APP STYLES (wie vorher) --- */
+        /* --- MAIN APP STYLES --- */
         #view-login { z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: #0f172a; padding: 2rem; border-radius: 1rem; border: 1px solid var(--neon-blue); text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 20px rgba(0, 242, 234, 0.2); }
         .input-field { width: 100%; padding: 15px; margin: 20px 0; background: #020617; border: 1px solid #334155; color: white; text-align: center; font-size: 1.2rem; border-radius: 8px; }
         .btn-main { width: 100%; padding: 15px; background: var(--neon-blue); color: black; font-family: 'Bangers'; font-size: 1.5rem; border-radius: 8px; border:none; }
         
-        /* Dashboard, Chat, etc. */
+        /* Dashboard & Co */
         .dash-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; max-width: 500px; margin: 60px auto 0; }
         .app-icon { background: #0f172a; border: 1px solid #333; padding: 20px; border-radius: 15px; display: flex; align-items: center; gap: 15px; color: white; }
         .icon-emoji { font-size: 2.5rem; background: rgba(255,255,255,0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
@@ -108,15 +126,14 @@
 
     <div id="view-intro" class="full-screen">
         <video id="video-layer" muted playsinline></video>
-        
         <div id="terminal-layer"></div>
-
         <button id="start-btn" onclick="app.startShow()">TAP TO START 🚀</button>
+        <button id="skip-btn" onclick="app.endIntro()">ÜBERSPRINGEN ⏩</button>
     </div>
 
     <div id="view-login" class="full-screen hidden">
         <div class="login-box">
-            <h1 style="font-family: 'Bangers'; font-size: 3rem; margin-bottom: 10px;">RENÉ OS <span style="color:var(--neon-pink)">v3.0</span></h1>
+            <h1 style="font-family: 'Bangers'; font-size: 3rem; margin-bottom: 10px;">RENÉ OS <span style="color:var(--neon-pink)">v3.1</span></h1>
             <p style="margin-bottom:10px; opacity:0.7">System erfolgreich geladen.</p>
             <input type="text" id="username" class="input-field" placeholder="Dein Name..." maxlength="10">
             <button class="btn-main" onclick="app.login()">LOGIN 🔑</button>
@@ -183,7 +200,6 @@
 
     <script>
         // --- CONFIG ---
-        // Liste deiner Video-Dateinamen hier prüfen:
         const videos = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4']; 
         
         // --- MULTIPLAYER SETUP ---
@@ -193,6 +209,7 @@
         // --- APP LOGIC ---
         const app = {
             user: localStorage.getItem('user') || '',
+            isIntroRunning: false, // Kontrolle ob Intro läuft
             
             init: () => {
                 if(app.user) {
@@ -207,72 +224,93 @@
             // THE INTRO SHOW
             startShow: () => {
                 const btn = document.getElementById('start-btn');
-                btn.style.display = 'none'; // Button weg
+                const skipBtn = document.getElementById('skip-btn');
+                btn.style.display = 'none';
+                skipBtn.style.display = 'block'; // Skip anzeigen
+                
+                app.isIntroRunning = true;
                 
                 const audio = document.getElementById('intro-music');
                 audio.volume = 1.0;
-                audio.play().catch(e => console.log("Audio braucht Interaktion"));
+                audio.play().catch(e => console.log("Audio Error"));
 
-                // Video Loop starten
+                // Video Loop
                 const vidEl = document.getElementById('video-layer');
                 let vidIdx = 0;
-                
                 function playNextVideo() {
-                    // Zyklisch durch die Videos gehen
+                    if(!app.isIntroRunning) return; // Stop wenn skipped
                     vidEl.src = videos[vidIdx];
                     vidEl.play();
                     vidIdx = (vidIdx + 1) % videos.length;
                 }
-                
-                vidEl.onended = playNextVideo; // Wenn eins fertig ist, nächstes spielen
-                // Falls nur ein Video da ist oder Fehler, einfach loopen
-                vidEl.onerror = () => { console.log("Video nicht gefunden, überspringe"); };
+                vidEl.onended = playNextVideo;
+                vidEl.onerror = () => { console.log("Video missing"); };
                 playNextVideo();
 
-                // Text abspielen
                 app.typeWriter();
             },
 
-            // TERMINAL TEXT LOGIC
+            // STOP INTRO LOGIC
+            endIntro: () => {
+                app.isIntroRunning = false;
+                
+                // Musik sofort aus
+                const audio = document.getElementById('intro-music');
+                audio.pause();
+                audio.currentTime = 0;
+
+                // Ansicht wechseln
+                document.getElementById('view-intro').classList.add('hidden');
+                document.getElementById('view-login').classList.remove('hidden');
+            },
+
+            // TERMINAL TEXT LOGIC (Länger & Langsamer)
             typeWriter: () => {
                 const lines = [
-                    "> System DoN & René...",
-                    "> Initialisiere Geburtstags-Protokoll...",
-                    "> Lade 'intro-sound.mp3'... OK.",
-                    "> Datum Check: 01.12. (Fehlgeschlagen)",
-                    "> Datum Check: 24.12. (Erfolgreich)",
-                    "> Lade Entschuldigung: 'Qualität braucht Zeit'...",
-                    "> Verbindung zu Tablet... Hergestellt.",
-                    "> Status: Red Bull leer. Augen rot.",
-                    "> Code Check: 100% Eigenbau.",
-                    "> Happy Birthday, René!",
+                    "> Initialisiere System: DoN & René OS...",
+                    "> ...",
+                    "> Verbindung wird aufgebaut...",
+                    "> Lade Sicherheitsprotokolle... [OK]",
+                    "> Überprüfe Kalender...",
+                    "> Fehler: Datum ist 24.12. - Ziel war 01.12.",
+                    "> Berechne Verzögerung...",
+                    "> ...",
+                    "> Analyse: Massive technische Hürden erkannt.",
+                    "> Lade Beweismaterial: 'Nächte am Tablet'...",
+                    "> Status Red Bull: Kritisch leer.",
+                    "> Status Augen: Rot.",
+                    "> Status Motivation: 100% Family.",
+                    "> Lade Custom-Code... 2000 Zeilen...",
+                    "> ...",
+                    "> Upload abgeschlossen.",
+                    "> Geschenk wird entschlüsselt...",
+                    "> Happy Birthday & Frohe Weihnachten, René!",
                     "> Starten in 3...",
                     "> 2...",
                     "> 1...",
-                    "> SYSTEM ONLINE."
+                    "> SYSTEM ONLINE. VIEL SPASS!"
                 ];
                 let i = 0;
                 const terminal = document.getElementById('terminal-layer');
 
                 function nextLine() {
+                    // Wenn Intro abgebrochen wurde, aufhören
+                    if (!app.isIntroRunning) return;
+
                     if (i < lines.length) {
                         const div = document.createElement('div');
                         div.className = 'terminal-line';
                         div.innerText = lines[i];
                         terminal.appendChild(div);
-                        terminal.scrollTop = terminal.scrollHeight; // Auto scroll
+                        terminal.scrollTop = terminal.scrollHeight;
                         i++;
-                        // Geschwindigkeit anpassen (schneller Beat = schneller Text)
-                        setTimeout(nextLine, 1500); 
+                        
+                        // Hier wird das Timing gesteuert (2000ms = langsamer)
+                        setTimeout(nextLine, 2200); 
                     } else {
+                        // Wenn Text fertig, kurz warten dann Ende
                         setTimeout(() => {
-                            // Intro vorbei, Switch to Login
-                            document.getElementById('view-intro').classList.add('hidden');
-                            document.getElementById('view-login').classList.remove('hidden');
-                            // Musik leiser machen, aber laufen lassen? Oder stoppen? 
-                            // Lassen wir sie leise als Background
-                            const audio = document.getElementById('intro-music');
-                            audio.volume = 0.2; 
+                            if(app.isIntroRunning) app.endIntro();
                         }, 2000);
                     }
                 }
@@ -290,7 +328,6 @@
 
             nav: (view) => {
                 document.querySelectorAll('.full-screen').forEach(el => el.classList.add('hidden'));
-                // Intro nie wieder anzeigen beim Navigieren
                 if(view === 'intro') return; 
                 document.getElementById('view-' + view).classList.remove('hidden');
             },
@@ -346,7 +383,6 @@
                 setup: () => {
                     const c = app.art.canvas;
                     const ctx = app.art.ctx;
-                    // Touch & Mouse Support
                     const getPos = (e) => {
                         const rect = c.getBoundingClientRect();
                         const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
@@ -357,7 +393,7 @@
                     const end = () => { app.art.isDrawing = false; };
                     const draw = (e) => {
                         if(!app.art.isDrawing) return;
-                        e.preventDefault(); // Kein Scrollen beim Malen
+                        e.preventDefault();
                         const pos = getPos(e);
                         ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineTo(pos.x, pos.y); ctx.stroke();
                     };
@@ -384,7 +420,6 @@
             }
         };
 
-        // Init
         app.art.setup();
         document.getElementById('click-btn').addEventListener('click', app.game.click);
         app.init();
