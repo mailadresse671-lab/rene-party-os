@@ -3,176 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RENÉ OS v13 - CINEMATIC</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>RENÉ OS v14 - HYPER CUT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --cyan: #00f2ea; --pink: #ff0050; --term-green: #0f0; --term-red: #f00;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; font-family: 'Fredoka', sans-serif; color: white; height: 100vh; overflow: hidden; }
+        :root { --cyan: #00f2ea; --pink: #ff0050; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Fredoka', sans-serif; height: 100vh; overflow: hidden; }
         
-        .hidden { display: none !important; }
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; }
-
-        /* INTRO STYLES */
-        #view-intro { background: #000; z-index: 2000; font-family: 'Share Tech Mono', monospace; }
-        #intro-vid-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; z-index: 1; filter: contrast(1.2); }
-        
-        #terminal-console { 
-            position: absolute; bottom: 10%; left: 5%; right: 5%; 
-            height: 40%; color: var(--term-green); font-size: 1rem; 
-            z-index: 2; display: flex; flex-direction: column; justify-content: flex-end;
-            text-shadow: 0 0 5px #0f0; overflow: hidden;
-        }
-        .log-line { margin-bottom: 5px; animation: fadeIn 0.3s forwards; }
-
-        #big-overlay { 
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); 
-            width: 100%; text-align: center; font-size: 3rem; font-weight: 900; 
-            z-index: 5; opacity: 0; transition: 0.5s; text-shadow: 0 0 20px var(--cyan);
+        #intro-vid {
+            position: absolute; width: 100%; height: 100%; object-fit: cover;
+            z-index: 1; transition: filter 0.05s; opacity: 0.4;
         }
 
-        #start-btn { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            z-index: 100; padding: 20px 40px; font-size: 1.5rem; background: var(--pink); 
-            border: none; border-radius: 50px; color: white; font-weight: bold;
+        #flash-pic {
+            position: absolute; width: 100%; height: 100%; object-fit: cover;
+            z-index: 5; display: none;
         }
 
-        #skip-btn {
-            position: absolute; top: 20px; right: 20px; z-index: 2001;
-            background: rgba(255,255,255,0.1); border: 1px solid white; color: white;
-            padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; display: none;
+        #impact-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 10; font-size: 3.5rem; text-align: center; text-transform: uppercase;
+            color: white; text-shadow: 0 0 20px var(--pink); opacity: 0;
+            width: 100%; pointer-events: none; line-height: 1;
         }
 
-        /* DASHBOARD */
-        #view-dash { background: #020617; padding: 20px; align-items: center; justify-content: center; }
-        .dash-card { 
-            background: rgba(255,255,255,0.05); border: 1px solid var(--cyan); 
-            width: 80%; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px;
+        #start-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 100; padding: 25px 50px; border-radius: 50px; background: var(--pink);
+            color: white; border: none; font-size: 2rem; cursor: pointer; font-weight: 900;
+            box-shadow: 0 0 40px var(--pink);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* Glitch & Flash Effekte */
+        .glitch-active { filter: invert(1) contrast(3) brightness(1.5) !important; }
+        .white-out { background: white !important; }
     </style>
 </head>
 <body>
 
     <audio id="intro-music" src="intro-sound.mp3"></audio>
-
-    <div id="view-intro" class="full-screen">
-        <video id="intro-vid-bg" muted playsinline></video>
-        <div id="terminal-console"></div>
-        <div id="big-overlay"></div>
-        <button id="skip-btn" onclick="intro.finish()">SKIP ⏩</button>
-        <button id="start-btn" onclick="intro.start()">START EXPERIENCE ⚡</button>
-    </div>
-
-    <div id="view-app" class="full-screen hidden">
-        <div id="view-dash" class="full-screen">
-            <h1 style="color:var(--pink); margin-bottom:30px;">RENÉ OS v13</h1>
-            <div class="dash-card">
-                <h2>WILLKOMMEN</h2>
-                <p>System erfolgreich gehackt.</p>
-                <p style="margin-top:10px; color:var(--cyan)">Viel Spaß auf deiner Party!</p>
-            </div>
-            <button onclick="location.reload()" style="background:none; border:1px solid #333; color:#333; padding:5px; margin-top:20px;">Intro nochmal schauen</button>
-        </div>
-    </div>
+    <video id="intro-vid" muted playsinline></video>
+    <img id="flash-pic" src="" alt="flash">
+    <div id="impact-text"></div>
+    <button id="start-btn" onclick="runHyperIntro()">SYSTEM OVERRIDE ⚡</button>
 
     <script>
-        const intro = {
-            vids: ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4'],
-            isFirstTime: localStorage.getItem('introSeen') === null,
+        // Deine 10 Bilder
+        const images = [];
+        for(let i=1; i<=10; i++) images.push(`pic${i}.jpg`);
+        const vids = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4'];
+        
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-            start: () => {
-                document.getElementById('start-btn').classList.add('hidden');
-                
-                // Audio & Video starten
-                const aud = document.getElementById('intro-music');
-                aud.play();
-                
-                const vid = document.getElementById('intro-vid-bg');
-                let i = 0;
-                const playNextVid = () => {
-                    vid.src = intro.vids[i];
-                    vid.play();
-                    i = (i + 1) % intro.vids.length;
-                };
-                vid.onended = playNextVid;
-                playNextVid();
+        async function runHyperIntro() {
+            document.getElementById('start-btn').style.display = 'none';
+            const aud = document.getElementById('intro-music');
+            const vid = document.getElementById('intro-vid');
+            const pic = document.getElementById('flash-pic');
+            const txt = document.getElementById('impact-text');
+            
+            aud.play();
+            vid.src = vids[0];
+            vid.play();
 
-                // Skip Button nur zeigen, wenn nicht das erste Mal
-                if (!intro.isFirstTime) {
-                    document.getElementById('skip-btn').style.display = 'block';
-                }
-
-                intro.runSequence();
-            },
-
-            log: (t, delay) => {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        const c = document.getElementById('terminal-console');
-                        const d = document.createElement('div');
-                        d.className = 'log-line';
-                        d.innerText = "> " + t;
-                        c.appendChild(d);
-                        c.scrollTop = c.scrollHeight;
-                        resolve();
-                    }, delay);
-                });
-            },
-
-            showBig: (t, duration) => {
-                const o = document.getElementById('big-overlay');
-                o.innerText = t;
-                o.style.opacity = 1;
-                return new Promise(r => setTimeout(() => { o.style.opacity = 0; r(); }, duration));
-            },
-
-            runSequence: async () => {
-                await intro.log("BOOTING DO-N OVERRIDE...", 500);
-                await intro.log("BYPASSING SECURITY...", 1000);
-                await intro.showBig("HACKING SYSTEM", 2000);
-                
-                await intro.log("TARGET: RENÉ", 500);
-                await intro.log("LOCATION: BIRTHDAY PARTY", 500);
-                await intro.log("STATUS: OPTIMAL", 1000);
-                
-                await intro.showBig("ACCESS GRANTED", 2000);
-                
-                await intro.log("LOADING PERSONAL DATA...", 800);
-                await intro.log("BALKON-RONNY DETECTED", 1200);
-                await intro.log("HUND & KATZE PROTOCOL ACTIVE", 1000);
-                
-                await intro.showBig("HAPPY BIRTHDAY!", 3000);
-                
-                await intro.log("CLEANING UP TRACES...", 1000);
-                await intro.log("SYSTEM READY.", 1000);
-
-                // Wenn das Lied vorbei ist (oder kurz davor)
-                const aud = document.getElementById('intro-music');
-                aud.onended = () => {
-                    intro.finish();
-                };
-                
-                // Falls das Lied sehr lang ist, beenden wir nach dem Log-Ablauf nach kurzem Puffer
-                setTimeout(() => {
-                    if (intro.isFirstTime) {
-                        // Beim ersten Mal warten wir wirklich aufs Audio-Ende
-                    } else {
-                        intro.finish();
-                    }
-                }, 15000); // Sicherheits-Timer falls Audio klemmt
-            },
-
-            finish: () => {
-                localStorage.setItem('introSeen', 'true');
-                document.getElementById('view-intro').classList.add('hidden');
-                document.getElementById('view-app').classList.remove('hidden');
-                document.getElementById('intro-music').pause();
+            // 1. PHASE: Schnelles Bilder-Gewitter (Strobe)
+            for(let i=0; i < images.length; i++) {
+                pic.src = images[i];
+                pic.style.display = 'block';
+                vid.classList.add('glitch-active');
+                await sleep(150); // Extrem schneller Blitz (0.15 Sek)
+                pic.style.display = 'none';
+                vid.classList.remove('glitch-active');
+                await sleep(50);
             }
-        };
+
+            // 2. PHASE: Schlagworte + Insider
+            const showWord = async (word, imageIdx = null) => {
+                txt.innerText = word;
+                txt.style.opacity = 1;
+                if(imageIdx !== null) {
+                    pic.src = images[imageIdx];
+                    pic.style.display = 'block';
+                }
+                vid.classList.add('glitch-active');
+                await sleep(800);
+                txt.style.opacity = 0;
+                pic.style.display = 'none';
+                vid.classList.remove('glitch-active');
+                vid.src = vids[Math.floor(Math.random()*vids.length)];
+                vid.play();
+                await sleep(100);
+            };
+
+            await showWord("TARGET: RENÉ");
+            await showWord("BALKON RONNY", 4); // Nutzt pic5.jpg
+            await showWord("HUND & KATZE", 7);  // Nutzt pic8.jpg
+            await showWord("DO-N OVERRIDE");
+            await showWord("HAPPY BIRTHDAY", 0); // Nutzt pic1.jpg
+
+            // FINALE: Mega Flash
+            document.body.classList.add('white-out');
+            txt.innerText = "READY TO PARTY?";
+            txt.style.color = "black";
+            txt.style.opacity = 1;
+            await sleep(1500);
+            
+            // ÜBERGANG ZUR APP
+            document.body.innerHTML = `
+                <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#020617; color:white; text-align:center; padding:20px;">
+                    <h1 style="color:#00f2ea; font-size:3rem; margin-bottom:20px;">RENÉ OS v14</h1>
+                    <div style="border:2px solid #00f2ea; padding:30px; border-radius:20px;">
+                        <p style="font-size:1.5rem;">System gehackt!</p>
+                        <p style="margin-top:20px;">Viel Spaß beim Feiern, Bruder!</p>
+                        <button onclick="location.reload()" style="margin-top:30px; background:none; border:1px solid #333; color:#333; padding:5px;">Intro nochmals</button>
+                    </div>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>
