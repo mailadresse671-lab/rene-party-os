@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>René OS - Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=VT323&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <style>
+        :root {
+            --neon-blue: #00f2ea;
+            --neon-pink: #ff0050;
+            --bg-dark: #020617;
+            --terminal-green: #0f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Utils */
+        .hidden { display: none !important; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; overflow: hidden; }
+        
+        /* --- INTRO SCENE --- */
+        #view-intro {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        /* Video Background Layer */
+        #video-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.3; /* Videos scheinen leicht durch */
+            z-index: 1;
+            object-fit: cover;
+            filter: contrast(1.2) brightness(0.8) hue-rotate(180deg); /* Matrix Look */
+        }
+
+        /* Terminal Text Layer */
+        #terminal-layer {
+            position: absolute;
+            z-index: 2;
+            padding: 20px;
+            font-family: 'VT323', monospace;
+            color: var(--terminal-green);
+            font-size: 1.8rem;
+            text-shadow: 0 0 5px var(--terminal-green);
+            bottom: 20%;
+            left: 0;
+            width: 100%;
+            text-align: left;
+        }
+
+        .terminal-line { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.1s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        
+        #start-btn {
+            z-index: 10;
+            padding: 20px 40px;
+            font-family: 'Bangers';
+            font-size: 2rem;
+            background: var(--neon-pink);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            animation: pulse 1.5s infinite;
+            cursor: pointer;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- MAIN APP STYLES (wie vorher) --- */
+        #view-login { z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
+        .login-box { background: #0f172a; padding: 2rem; border-radius: 1rem; border: 1px solid var(--neon-blue); text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 20px rgba(0, 242, 234, 0.2); }
+        .input-field { width: 100%; padding: 15px; margin: 20px 0; background: #020617; border: 1px solid #334155; color: white; text-align: center; font-size: 1.2rem; border-radius: 8px; }
+        .btn-main { width: 100%; padding: 15px; background: var(--neon-blue); color: black; font-family: 'Bangers'; font-size: 1.5rem; border-radius: 8px; border:none; }
+        
+        /* Dashboard, Chat, etc. */
+        .dash-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; max-width: 500px; margin: 60px auto 0; }
+        .app-icon { background: #0f172a; border: 1px solid #333; padding: 20px; border-radius: 15px; display: flex; align-items: center; gap: 15px; color: white; }
+        .icon-emoji { font-size: 2.5rem; background: rgba(255,255,255,0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+        .app-header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: rgba(2,6,23,0.9); border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 50; }
+        .back-btn { background: none; color: white; font-size: 1.5rem; border: none; }
+        
+        /* Chat */
+        #chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 80px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; word-wrap: break-word;}
+        .mine { align-self: flex-end; background: var(--neon-blue); color: black; }
+        .others { align-self: flex-start; background: #334155; }
+        .chat-input-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: var(--bg-dark); display: flex; gap: 10px; border-top: 1px solid #333; }
+        
+        /* Game */
+        .game-area { display: flex; flex-direction: column; align-items: center; padding-top: 30px; height: 100%; }
+        .click-btn { width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--neon-blue); background: radial-gradient(circle, #333, #000); font-size: 5rem; margin: 20px 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,242,234,0.3); }
+        .click-btn:active { transform: scale(0.95); }
+        #win-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+
+        /* Art */
+        #gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; padding: 15px; overflow-y: auto; padding-bottom: 100px;}
+        .gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <audio id="intro-music" src="intro-sound.mp3" preload="auto"></audio>
+
+    <div id="view-intro" class="full-screen">
+        <video id="video-layer" muted playsinline></video>
+        
+        <div id="terminal-layer"></div>
+
+        <button id="start-btn" onclick="app.startShow()">TAP TO START 🚀</button>
+    </div>
+
+    <div id="view-login" class="full-screen hidden">
+        <div class="login-box">
+            <h1 style="font-family: 'Bangers'; font-size: 3rem; margin-bottom: 10px;">RENÉ OS <span style="color:var(--neon-pink)">v3.0</span></h1>
+            <p style="margin-bottom:10px; opacity:0.7">System erfolgreich geladen.</p>
+            <input type="text" id="username" class="input-field" placeholder="Dein Name..." maxlength="10">
+            <button class="btn-main" onclick="app.login()">LOGIN 🔑</button>
+        </div>
+    </div>
+
+    <div id="view-dash" class="full-screen hidden" style="overflow-y:auto;">
+        <div style="text-align: center; margin-top: 40px;">
+            <h2 style="font-family: 'Bangers'; letter-spacing: 2px;">SYSTEM STATUS: <span style="color:var(--terminal-green)">ONLINE</span></h2>
+            <p>Willkommen, <span id="display-name" style="color:var(--neon-blue); font-weight:bold;">GAST</span></p>
+        </div>
+        <div class="dash-grid">
+            <button class="app-icon" onclick="app.nav('chat')">
+                <div class="icon-emoji">💬</div>
+                <div style="text-align: left;"><h3>VIBE CHECK</h3><p style="color:#aaa; font-size:0.8rem">Gästebuch & Chat</p></div>
+            </button>
+            <button class="app-icon" onclick="app.nav('game')">
+                <div class="icon-emoji">🏆</div>
+                <div style="text-align: left;"><h3>HYPE CLICKER</h3><p style="color:#aaa; font-size:0.8rem">Geschenk freischalten</p></div>
+            </button>
+            <button class="app-icon" onclick="app.nav('art')">
+                <div class="icon-emoji">🎨</div>
+                <div style="text-align: left;"><h3>PICASSO</h3><p style="color:#aaa; font-size:0.8rem">Malen für René</p></div>
+            </button>
+        </div>
+    </div>
+
+    <div id="view-chat" class="full-screen hidden">
+        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">CHAT</div><div style="width:30px"></div></div>
+        <div id="chat-list"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-msg" style="flex:1; padding:10px; border-radius:20px; border:none;" placeholder="Nachricht...">
+            <button onclick="app.chat.send()" style="background:var(--neon-pink); width:40px; height:40px; border-radius:50%; border:none;">➤</button>
+        </div>
+    </div>
+
+    <div id="view-game" class="full-screen hidden">
+        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">CLICKER</div><div style="width:30px"></div></div>
+        <div class="game-area">
+            <div>GLOBAL HIGH: <span id="global-high" style="color:var(--neon-blue)">0</span></div>
+            <div style="font-family: 'Bangers'; font-size: 5rem; text-shadow: 0 0 10px var(--neon-pink);" id="local-score">0</div>
+            <div class="click-btn" id="click-btn">🎁</div>
+            <p style="margin-top:20px;">Klicke 500x für das Geschenk!</p>
+        </div>
+        <div id="win-modal">
+            <h1 style="font-family: 'Bangers'; font-size: 3rem; color: var(--neon-blue);">GLÜCKWUNSCH!</h1>
+            <div style="font-size: 5rem; margin: 20px;">🍽️</div>
+            <p style="font-size: 1.2rem; margin: 20px;">Dein Geschenk:</p>
+            <h2 style="background: white; color: black; padding: 15px; transform: rotate(-2deg); border-radius:5px;">GUTSCHEIN FÜR EIN<br>ABENDESSEN!</h2>
+            <p style="margin-top:10px; font-size:0.8rem;">(Eingelöst von DoN)</p>
+            <button onclick="location.reload()" style="margin-top:30px; padding: 10px 30px; border-radius: 20px; background: transparent; border: 1px solid white; color: white;">Zurück</button>
+        </div>
+    </div>
+
+    <div id="view-art" class="full-screen hidden" style="display:flex; flex-direction:column;">
+        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">ART</div><button onclick="app.art.clear()" style="font-size:0.8rem; background:none; color:red; border:none;">Clear</button></div>
+        <div style="padding: 10px; text-align: center; background:#222;">
+            <canvas id="canvas" width="300" height="300" style="background: white; border-radius: 8px; touch-action: none;"></canvas>
+            <br>
+            <button onclick="app.art.save()" style="margin-top:10px; background:var(--neon-blue); padding: 10px 30px; border-radius: 20px; font-weight: bold; border:none;">POSTEN 🎨</button>
+        </div>
+        <div id="gallery-grid"></div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        // Liste deiner Video-Dateinamen hier prüfen:
+        const videos = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4']; 
+        
+        // --- MULTIPLAYER SETUP ---
+        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+        const db = gun.get('rene-party-v3-final'); 
+
+        // --- APP LOGIC ---
+        const app = {
+            user: localStorage.getItem('user') || '',
+            
+            init: () => {
+                if(app.user) {
+                    document.getElementById('username').value = app.user;
+                    document.getElementById('display-name').innerText = app.user;
+                }
+                app.chat.listen();
+                app.game.listen();
+                app.art.listen();
+            },
+
+            // THE INTRO SHOW
+            startShow: () => {
+                const btn = document.getElementById('start-btn');
+                btn.style.display = 'none'; // Button weg
+                
+                const audio = document.getElementById('intro-music');
+                audio.volume = 1.0;
+                audio.play().catch(e => console.log("Audio braucht Interaktion"));
+
+                // Video Loop starten
+                const vidEl = document.getElementById('video-layer');
+                let vidIdx = 0;
+                
+                function playNextVideo() {
+                    // Zyklisch durch die Videos gehen
+                    vidEl.src = videos[vidIdx];
+                    vidEl.play();
+                    vidIdx = (vidIdx + 1) % videos.length;
+                }
+                
+                vidEl.onended = playNextVideo; // Wenn eins fertig ist, nächstes spielen
+                // Falls nur ein Video da ist oder Fehler, einfach loopen
+                vidEl.onerror = () => { console.log("Video nicht gefunden, überspringe"); };
+                playNextVideo();
+
+                // Text abspielen
+                app.typeWriter();
+            },
+
+            // TERMINAL TEXT LOGIC
+            typeWriter: () => {
+                const lines = [
+                    "> System DoN & René...",
+                    "> Initialisiere Geburtstags-Protokoll...",
+                    "> Lade 'intro-sound.mp3'... OK.",
+                    "> Datum Check: 01.12. (Fehlgeschlagen)",
+                    "> Datum Check: 24.12. (Erfolgreich)",
+                    "> Lade Entschuldigung: 'Qualität braucht Zeit'...",
+                    "> Verbindung zu Tablet... Hergestellt.",
+                    "> Status: Red Bull leer. Augen rot.",
+                    "> Code Check: 100% Eigenbau.",
+                    "> Happy Birthday, René!",
+                    "> Starten in 3...",
+                    "> 2...",
+                    "> 1...",
+                    "> SYSTEM ONLINE."
+                ];
+                let i = 0;
+                const terminal = document.getElementById('terminal-layer');
+
+                function nextLine() {
+                    if (i < lines.length) {
+                        const div = document.createElement('div');
+                        div.className = 'terminal-line';
+                        div.innerText = lines[i];
+                        terminal.appendChild(div);
+                        terminal.scrollTop = terminal.scrollHeight; // Auto scroll
+                        i++;
+                        // Geschwindigkeit anpassen (schneller Beat = schneller Text)
+                        setTimeout(nextLine, 1500); 
+                    } else {
+                        setTimeout(() => {
+                            // Intro vorbei, Switch to Login
+                            document.getElementById('view-intro').classList.add('hidden');
+                            document.getElementById('view-login').classList.remove('hidden');
+                            // Musik leiser machen, aber laufen lassen? Oder stoppen? 
+                            // Lassen wir sie leise als Background
+                            const audio = document.getElementById('intro-music');
+                            audio.volume = 0.2; 
+                        }, 2000);
+                    }
+                }
+                nextLine();
+            },
+
+            login: () => {
+                const name = document.getElementById('username').value.trim();
+                if(!name) return alert("Gib einen Namen ein, Bro!");
+                app.user = name;
+                localStorage.setItem('user', name);
+                document.getElementById('display-name').innerText = name;
+                app.nav('dash');
+            },
+
+            nav: (view) => {
+                document.querySelectorAll('.full-screen').forEach(el => el.classList.add('hidden'));
+                // Intro nie wieder anzeigen beim Navigieren
+                if(view === 'intro') return; 
+                document.getElementById('view-' + view).classList.remove('hidden');
+            },
+
+            // --- MODULES ---
+            chat: {
+                send: () => {
+                    const txt = document.getElementById('chat-msg').value;
+                    if(!txt) return;
+                    db.get('chat').set({ text: txt, author: app.user, time: Date.now() });
+                    document.getElementById('chat-msg').value = '';
+                },
+                listen: () => {
+                    db.get('chat').map().once((data, id) => {
+                        if(!data || document.getElementById(id)) return;
+                        const div = document.createElement('div');
+                        div.id = id;
+                        div.className = `msg ${data.author === app.user ? 'mine' : 'others'}`;
+                        div.innerHTML = `<b>${data.author}:</b> ${data.text}`;
+                        const list = document.getElementById('chat-list');
+                        list.appendChild(div);
+                        list.scrollTop = list.scrollHeight;
+                    });
+                }
+            },
+
+            game: {
+                clicks: 0,
+                click: () => {
+                    app.game.clicks++;
+                    document.getElementById('local-score').innerText = app.game.clicks;
+                    
+                    const currentHigh = parseInt(document.getElementById('global-high').innerText) || 0;
+                    if(app.game.clicks > currentHigh) {
+                        db.get('highscore').put(app.game.clicks);
+                    }
+                    if(app.game.clicks === 500) {
+                        document.getElementById('win-modal').style.display = 'flex';
+                        db.get('chat').set({ text: "🏆 HAT DAS GESCHENK GEKNACKT!", author: "SYSTEM" });
+                    }
+                },
+                listen: () => {
+                    db.get('highscore').on(score => {
+                        document.getElementById('global-high').innerText = score;
+                    });
+                }
+            },
+
+            art: {
+                canvas: document.getElementById('canvas'),
+                ctx: document.getElementById('canvas').getContext('2d'),
+                isDrawing: false,
+                setup: () => {
+                    const c = app.art.canvas;
+                    const ctx = app.art.ctx;
+                    // Touch & Mouse Support
+                    const getPos = (e) => {
+                        const rect = c.getBoundingClientRect();
+                        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                        return {x, y};
+                    };
+                    const start = (e) => { app.art.isDrawing = true; ctx.beginPath(); };
+                    const end = () => { app.art.isDrawing = false; };
+                    const draw = (e) => {
+                        if(!app.art.isDrawing) return;
+                        e.preventDefault(); // Kein Scrollen beim Malen
+                        const pos = getPos(e);
+                        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineTo(pos.x, pos.y); ctx.stroke();
+                    };
+                    c.addEventListener('mousedown', start); c.addEventListener('mousemove', draw); c.addEventListener('mouseup', end);
+                    c.addEventListener('touchstart', start); c.addEventListener('touchmove', draw); c.addEventListener('touchend', end);
+                },
+                clear: () => app.art.ctx.clearRect(0,0,300,300),
+                save: () => {
+                    const data = app.art.canvas.toDataURL('image/jpeg', 0.5); 
+                    db.get('gallery').set({ img: data, author: app.user });
+                    app.art.clear();
+                    alert("Gesendet!");
+                },
+                listen: () => {
+                    db.get('gallery').map().once((data, id) => {
+                        if(!data || document.getElementById(id)) return;
+                        const img = document.createElement('img');
+                        img.src = data.img;
+                        img.className = 'gallery-img';
+                        img.id = id;
+                        document.getElementById('gallery-grid').prepend(img);
+                    });
+                }
+            }
+        };
+
+        // Init
+        app.art.setup();
+        document.getElementById('click-btn').addEventListener('click', app.game.click);
+        app.init();
+    </script>
+</body>
+</html>
