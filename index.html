@@ -1,187 +1,108 @@
-// js/triviaBattle.js
-import { achievements } from './achievements.js';
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 PARTY ARENA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-export class TriviaBattle {
-    constructor(containerId) {
-        this.container = document.getElementById(containerId);
-        this.timeLimit = 10;
-        this.timer = null;
-        this.timeLeft = this.timeLimit;
-        this.score = 0;
-        this.locked = false;
-
-        this.questions = [
-            {
-                q: 'Wie viele Kontinente gibt es?',
-                a: ['5', '6', '7', '8'],
-                correct: 2
-            },
-            {
-                q: 'Was ist kein Programmiersprachen-Framework?',
-                a: ['React', 'Vue', 'Laravel', 'Photoshop'],
-                correct: 3
-            },
-            {
-                q: 'Wie viele Minuten hat eine Stunde?',
-                a: ['30', '45', '60', '90'],
-                correct: 2
-            },
-            {
-                q: 'Was bedeutet HTML?',
-                a: [
-                    'HyperText Markup Language',
-                    'High Transfer Machine Logic',
-                    'Home Tool Markup Language',
-                    'Hyperlink Text Model Language'
-                ],
-                correct: 0
-            }
-        ];
-
-        this.shuffle(this.questions);
-        this.index = 0;
-        this.render();
-        this.nextQuestion();
-    }
-
-    shuffle(arr) {
-        arr.sort(() => Math.random() - 0.5);
-    }
-
-    render() {
-        this.container.innerHTML = `
-            <div class="trivia-box">
-                <div class="trivia-header">
-                    <span id="trivia-score">Score: 0</span>
-                    <span id="trivia-timer">⏱ 10</span>
-                </div>
-                <div id="trivia-question"></div>
-                <div id="trivia-answers"></div>
-            </div>
-        `;
-
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .trivia-box {
-                background: #111;
-                color: #fff;
-                padding: 20px;
-                border-radius: 15px;
-                max-width: 500px;
-                margin: auto;
-                font-family: sans-serif;
-                box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            }
-            .trivia-header {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 15px;
-                font-weight: bold;
-            }
-            #trivia-question {
-                font-size: 1.2rem;
-                margin-bottom: 15px;
-            }
-            #trivia-answers button {
-                width: 100%;
-                margin-bottom: 10px;
-                padding: 12px;
-                font-size: 1rem;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                background: #222;
-                color: white;
-            }
-            #trivia-answers button:hover {
-                background: #333;
-            }
-            #trivia-answers button.correct {
-                background: #00ff9c;
-                color: black;
-            }
-            #trivia-answers button.wrong {
-                background: #ff4b4b;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    nextQuestion() {
-        if (this.index >= this.questions.length) {
-            this.endGame();
-            return;
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: radial-gradient(circle at top, #1a1a1a, #000);
+            color: white;
+            min-height: 100vh;
         }
 
-        this.locked = false;
-        this.timeLeft = this.timeLimit;
-        this.updateTimer();
-
-        const q = this.questions[this.index];
-        document.getElementById('trivia-question').textContent = q.q;
-
-        const answers = document.getElementById('trivia-answers');
-        answers.innerHTML = '';
-
-        q.a.forEach((text, i) => {
-            const btn = document.createElement('button');
-            btn.textContent = text;
-            btn.onclick = () => this.answer(btn, i === q.correct);
-            answers.appendChild(btn);
-        });
-
-        clearInterval(this.timer);
-        this.timer = setInterval(() => {
-            this.timeLeft--;
-            this.updateTimer();
-            if (this.timeLeft <= 0) {
-                clearInterval(this.timer);
-                this.fail();
-            }
-        }, 1000);
-    }
-
-    updateTimer() {
-        document.getElementById('trivia-timer').textContent = `⏱ ${this.timeLeft}`;
-    }
-
-    answer(button, correct) {
-        if (this.locked) return;
-        this.locked = true;
-        clearInterval(this.timer);
-
-        if (correct) {
-            button.classList.add('correct');
-            this.score += 100;
-            achievements.track('triviaScore', 100);
-        } else {
-            button.classList.add('wrong');
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #ff0066, #ffcc00);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        document.getElementById('trivia-score').textContent = `Score: ${this.score}`;
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
 
-        setTimeout(() => {
-            this.index++;
-            this.nextQuestion();
-        }, 1000);
-    }
+        header p {
+            margin-top: 8px;
+            font-weight: normal;
+        }
 
-    fail() {
-        this.locked = true;
-        this.endGame(true);
-    }
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
 
-    endGame(timeout = false) {
-        this.container.innerHTML = `
-            <div class="trivia-box">
-                <h2>${timeout ? '💀 TIME UP' : '🏁 FINISH'}</h2>
-                <p>Final Score: <strong>${this.score}</strong></p>
-                <button id="restart">🔁 Nochmal</button>
-            </div>
-        `;
+        section {
+            background: #111;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
 
-        document.getElementById('restart').onclick = () => {
-            new TriviaBattle(this.container.id);
-        };
-    }
-}
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .hint {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎉 PARTY ARENA</h1>
+    <p>Trivia · Chaos · Achievements · Eskalation</p>
+</header>
+
+<main>
+
+    <!-- TRIVIA -->
+    <section>
+        <div id="trivia"></div>
+        <div class="hint">🎯 Schnelligkeit schlägt Wissen</div>
+    </section>
+
+    <!-- PARTY CHAOS -->
+    <section>
+        <div id="party"></div>
+        <div class="hint">🍾 Zufall ist der Boss</div>
+    </section>
+
+</main>
+
+<footer>
+    🚀 Built for Chaos · Hosted on GitHub Pages
+</footer>
+
+<!-- MODULE BOOTSTRAP -->
+<script type="module">
+    import { TriviaBattle } from './js/triviaBattle.js';
+    import { PartyChaos } from './js/partyChaos.js';
+
+    // Systeme initialisieren
+    new TriviaBattle('trivia');
+    new PartyChaos('party');
+
+    console.log('🔥 PARTY ARENA READY');
+</script>
+
+</body>
+</html>
