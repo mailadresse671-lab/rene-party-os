@@ -3,119 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RENÉ OS v14 - HYPER CUT</title>
+    <title>RENÉ OS - INFINITY EDITION</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --cyan: #00f2ea; --pink: #ff0050; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: 'Fredoka', sans-serif; height: 100vh; overflow: hidden; }
+        body { background: #000; font-family: 'Fredoka', sans-serif; height: 100vh; overflow: hidden; color: white; }
         
         #intro-vid {
             position: absolute; width: 100%; height: 100%; object-fit: cover;
-            z-index: 1; transition: filter 0.05s; opacity: 0.4;
+            z-index: 1; opacity: 0.3; filter: grayscale(1);
         }
 
-        #flash-pic {
+        #pic-layer {
             position: absolute; width: 100%; height: 100%; object-fit: cover;
-            z-index: 5; display: none;
+            z-index: 5; opacity: 0; transition: opacity 1.5s ease-in-out, transform 3s ease-out;
+            filter: contrast(1.1) brightness(1.1);
         }
 
         #impact-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 10; font-size: 3.5rem; text-align: center; text-transform: uppercase;
-            color: white; text-shadow: 0 0 20px var(--pink); opacity: 0;
-            width: 100%; pointer-events: none; line-height: 1;
+            position: absolute; bottom: 15%; left: 0; width: 100%;
+            z-index: 10; font-size: 3rem; text-align: center; text-transform: uppercase;
+            color: white; text-shadow: 0 0 15px var(--cyan); opacity: 0;
+            transition: opacity 0.5s; letter-spacing: 5px;
         }
 
         #start-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 100; padding: 25px 50px; border-radius: 50px; background: var(--pink);
-            color: white; border: none; font-size: 2rem; cursor: pointer; font-weight: 900;
-            box-shadow: 0 0 40px var(--pink);
+            z-index: 100; padding: 25px 50px; border-radius: 10px; background: none;
+            color: var(--cyan); border: 2px solid var(--cyan); font-size: 1.5rem; 
+            cursor: pointer; font-weight: 900; letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.4);
         }
 
-        /* Glitch & Flash Effekte */
-        .glitch-active { filter: invert(1) contrast(3) brightness(1.5) !important; }
-        .white-out { background: white !important; }
+        .active-pic { opacity: 1 !important; transform: scale(1.1); }
+        .glitch-flash { animation: flash 0.2s infinite; }
+        @keyframes flash { 0% { opacity: 0.3; } 50% { opacity: 0.6; } 100% { opacity: 0.3; } }
     </style>
 </head>
 <body>
 
     <audio id="intro-music" src="intro-sound.mp3"></audio>
     <video id="intro-vid" muted playsinline></video>
-    <img id="flash-pic" src="" alt="flash">
+    <img id="pic-layer" src="" alt="show">
     <div id="impact-text"></div>
-    <button id="start-btn" onclick="runHyperIntro()">SYSTEM OVERRIDE ⚡</button>
+    <button id="start-btn" onclick="runInfinityIntro()">INITIALIZE SYSTEM</button>
 
     <script>
-        // Deine 10 Bilder
         const images = [];
         for(let i=1; i<=10; i++) images.push(`pic${i}.jpg`);
         const vids = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4'];
         
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-        async function runHyperIntro() {
+        async function runInfinityIntro() {
             document.getElementById('start-btn').style.display = 'none';
             const aud = document.getElementById('intro-music');
             const vid = document.getElementById('intro-vid');
-            const pic = document.getElementById('flash-pic');
+            const pic = document.getElementById('pic-layer');
             const txt = document.getElementById('impact-text');
             
             aud.play();
             vid.src = vids[0];
             vid.play();
 
-            // 1. PHASE: Schnelles Bilder-Gewitter (Strobe)
-            for(let i=0; i < images.length; i++) {
-                pic.src = images[i];
-                pic.style.display = 'block';
-                vid.classList.add('glitch-active');
-                await sleep(150); // Extrem schneller Blitz (0.15 Sek)
-                pic.style.display = 'none';
-                vid.classList.remove('glitch-active');
-                await sleep(50);
-            }
-
-            // 2. PHASE: Schlagworte + Insider
-            const showWord = async (word, imageIdx = null) => {
-                txt.innerText = word;
-                txt.style.opacity = 1;
-                if(imageIdx !== null) {
-                    pic.src = images[imageIdx];
-                    pic.style.display = 'block';
+            const showMoment = async (imgIdx, word, duration = 3500) => {
+                // Bild wechseln und einfaden
+                pic.src = images[imgIdx];
+                pic.classList.add('active-pic');
+                
+                // Text anzeigen
+                if(word) {
+                    txt.innerText = word;
+                    txt.style.opacity = 1;
                 }
-                vid.classList.add('glitch-active');
-                await sleep(800);
-                txt.style.opacity = 0;
-                pic.style.display = 'none';
-                vid.classList.remove('glitch-active');
+
+                // Video Hintergrund-Effekt wechseln
                 vid.src = vids[Math.floor(Math.random()*vids.length)];
                 vid.play();
-                await sleep(100);
+
+                await sleep(duration);
+                
+                // Ausfaden für den nächsten Moment
+                pic.classList.remove('active-pic');
+                txt.style.opacity = 0;
+                await sleep(500);
             };
 
-            await showWord("TARGET: RENÉ");
-            await showWord("BALKON RONNY", 4); // Nutzt pic5.jpg
-            await showWord("HUND & KATZE", 7);  // Nutzt pic8.jpg
-            await showWord("DO-N OVERRIDE");
-            await showWord("HAPPY BIRTHDAY", 0); // Nutzt pic1.jpg
+            // --- DIE SEQUENZ (Länger & Atemberaubend) ---
+            await sleep(1000); 
+            
+            await showMoment(0, "SYSTEM BOOT");
+            await showMoment(1, "LOADING MEMORIES");
+            await showMoment(2, "RENÉ");
+            await showMoment(3, "CHAPTER 29");
+            await showMoment(4, "AUTHENTICATION");
+            await showMoment(5, "ACCESS GRANTED");
+            await showMoment(6, "LEVEL UP");
+            await showMoment(7, "PARTY MODE");
+            await showMoment(8, "2025");
+            await showMoment(9, "HAPPY BIRTHDAY");
 
-            // FINALE: Mega Flash
-            document.body.classList.add('white-out');
-            txt.innerText = "READY TO PARTY?";
-            txt.style.color = "black";
+            // FINALE
+            vid.style.opacity = 1;
+            vid.style.filter = "grayscale(0) contrast(1.5)";
+            txt.innerText = "WELCOME TO RENÉ OS";
             txt.style.opacity = 1;
-            await sleep(1500);
+            txt.style.bottom = "50%";
+            
+            await sleep(4000);
             
             // ÜBERGANG ZUR APP
             document.body.innerHTML = `
                 <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#020617; color:white; text-align:center; padding:20px;">
-                    <h1 style="color:#00f2ea; font-size:3rem; margin-bottom:20px;">RENÉ OS v14</h1>
-                    <div style="border:2px solid #00f2ea; padding:30px; border-radius:20px;">
-                        <p style="font-size:1.5rem;">System gehackt!</p>
-                        <p style="margin-top:20px;">Viel Spaß beim Feiern, Bruder!</p>
-                        <button onclick="location.reload()" style="margin-top:30px; background:none; border:1px solid #333; color:#333; padding:5px;">Intro nochmals</button>
+                    <h1 style="color:#00f2ea; font-size:3rem; margin-bottom:20px; font-family:'Fredoka'">RENÉ OS v15</h1>
+                    <div style="border:1px solid #00f2ea; padding:40px; border-radius:10px; background: rgba(255,255,255,0.02)">
+                        <p style="font-size:1.2rem; letter-spacing:2px;">READY TO CELEBRATE?</p>
+                        <button onclick="location.reload()" style="margin-top:30px; background:none; border:1px solid #333; color:#555; padding:8px 15px; cursor:pointer;">REPLAY INTRO</button>
                     </div>
                 </div>
             `;
