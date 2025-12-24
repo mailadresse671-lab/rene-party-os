@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>René OS - Ultimate Edition</title>
+    <title>René OS - Producer Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=VT323&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
@@ -12,6 +12,7 @@
             --neon-pink: #ff0050;
             --bg-dark: #020617;
             --terminal-green: #0f0;
+            --pad-off: #1e293b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -21,81 +22,21 @@
         .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; overflow: hidden; }
         
         /* --- INTRO SCENE --- */
-        #view-intro {
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        
-        /* Video Background Layer */
-        #video-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.4; /* Videos etwas sichtbarer */
-            z-index: 1;
-            object-fit: cover;
-            filter: contrast(1.2) brightness(0.8) hue-rotate(180deg);
-        }
-
-        /* Terminal Text Layer */
-        #terminal-layer {
-            position: absolute;
-            z-index: 2;
-            padding: 20px;
-            font-family: 'VT323', monospace;
-            color: var(--terminal-green);
-            font-size: 1.6rem;
-            text-shadow: 0 0 5px var(--terminal-green);
-            bottom: 15%;
-            left: 0;
-            width: 100%;
-            text-align: left;
-            pointer-events: none; /* Klicks gehen durch */
-        }
-
+        #view-intro { background: #000; display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        #video-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.4; z-index: 1; object-fit: cover; filter: contrast(1.2) brightness(0.8) hue-rotate(180deg); }
+        #terminal-layer { position: absolute; z-index: 2; padding: 20px; font-family: 'VT323', monospace; color: var(--terminal-green); font-size: 1.6rem; text-shadow: 0 0 5px var(--terminal-green); bottom: 15%; left: 0; width: 100%; text-align: left; pointer-events: none; }
         .terminal-line { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.1s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
-        
-        #start-btn {
-            z-index: 10;
-            padding: 20px 40px;
-            font-family: 'Bangers';
-            font-size: 2rem;
-            background: var(--neon-pink);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            animation: pulse 1.5s infinite;
-            cursor: pointer;
-        }
-
-        #skip-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 20;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid white;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: none; /* Erst anzeigen nach Start */
-        }
-
+        #start-btn { z-index: 10; padding: 20px 40px; font-family: 'Bangers'; font-size: 2rem; background: var(--neon-pink); color: white; border: none; border-radius: 10px; animation: pulse 1.5s infinite; cursor: pointer; }
+        #skip-btn { position: absolute; top: 20px; right: 20px; z-index: 20; background: rgba(0,0,0,0.5); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; cursor: pointer; display: none; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- MAIN APP STYLES --- */
+        /* --- MAIN APP --- */
         #view-login { z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: #0f172a; padding: 2rem; border-radius: 1rem; border: 1px solid var(--neon-blue); text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 20px rgba(0, 242, 234, 0.2); }
         .input-field { width: 100%; padding: 15px; margin: 20px 0; background: #020617; border: 1px solid #334155; color: white; text-align: center; font-size: 1.2rem; border-radius: 8px; }
         .btn-main { width: 100%; padding: 15px; background: var(--neon-blue); color: black; font-family: 'Bangers'; font-size: 1.5rem; border-radius: 8px; border:none; }
         
-        /* Dashboard & Co */
         .dash-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; max-width: 500px; margin: 60px auto 0; }
         .app-icon { background: #0f172a; border: 1px solid #333; padding: 20px; border-radius: 15px; display: flex; align-items: center; gap: 15px; color: white; }
         .icon-emoji { font-size: 2.5rem; background: rgba(255,255,255,0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
@@ -108,12 +49,47 @@
         .mine { align-self: flex-end; background: var(--neon-blue); color: black; }
         .others { align-self: flex-start; background: #334155; }
         .chat-input-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: var(--bg-dark); display: flex; gap: 10px; border-top: 1px solid #333; }
+
+        /* --- DJ ROOM (NEW) --- */
+        .dj-interface { display: flex; flex-direction: column; align-items: center; height: 100%; padding-top: 20px; }
+        .dj-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            padding: 20px; 
+            width: 100%; 
+            max-width: 400px; 
+        }
+        .pad {
+            aspect-ratio: 1;
+            background: var(--pad-off);
+            border: 2px solid #334155;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .pad:active, .pad.active { transform: scale(0.95); border-color: white; }
+        .pad span { font-size: 2rem; margin-bottom: 5px; pointer-events: none;}
+        .pad label { font-size: 0.8rem; text-transform: uppercase; color: #aaa; pointer-events: none; font-weight: bold;}
         
-        /* Game */
-        .game-area { display: flex; flex-direction: column; align-items: center; padding-top: 30px; height: 100%; }
-        .click-btn { width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--neon-blue); background: radial-gradient(circle, #333, #000); font-size: 5rem; margin: 20px 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,242,234,0.3); }
-        .click-btn:active { transform: scale(0.95); }
-        #win-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        /* Pad Colors */
+        .p-kick { box-shadow: 0 0 10px rgba(255, 0, 80, 0.2); }
+        .p-kick:active { background: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); }
+        
+        .p-snare { box-shadow: 0 0 10px rgba(0, 242, 234, 0.2); }
+        .p-snare:active { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); }
+
+        .p-bass { box-shadow: 0 0 10px rgba(255, 255, 0, 0.2); }
+        .p-bass:active { background: yellow; color: black; box-shadow: 0 0 20px yellow; }
+
+        .live-indicator { margin-top: 20px; font-family: 'VT323'; color: var(--neon-pink); animation: blink 1s infinite; display: none;}
+        @keyframes blink { 50% { opacity: 0; } }
 
         /* Art */
         #gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; padding: 15px; overflow-y: auto; padding-bottom: 100px;}
@@ -133,8 +109,8 @@
 
     <div id="view-login" class="full-screen hidden">
         <div class="login-box">
-            <h1 style="font-family: 'Bangers'; font-size: 3rem; margin-bottom: 10px;">RENÉ OS <span style="color:var(--neon-pink)">v3.1</span></h1>
-            <p style="margin-bottom:10px; opacity:0.7">System erfolgreich geladen.</p>
+            <h1 style="font-family: 'Bangers'; font-size: 3rem; margin-bottom: 10px;">RENÉ OS <span style="color:var(--neon-pink)">v4.0</span></h1>
+            <p style="margin-bottom:10px; opacity:0.7">Login für Party-Modus</p>
             <input type="text" id="username" class="input-field" placeholder="Dein Name..." maxlength="10">
             <button class="btn-main" onclick="app.login()">LOGIN 🔑</button>
         </div>
@@ -150,9 +126,9 @@
                 <div class="icon-emoji">💬</div>
                 <div style="text-align: left;"><h3>VIBE CHECK</h3><p style="color:#aaa; font-size:0.8rem">Gästebuch & Chat</p></div>
             </button>
-            <button class="app-icon" onclick="app.nav('game')">
-                <div class="icon-emoji">🏆</div>
-                <div style="text-align: left;"><h3>HYPE CLICKER</h3><p style="color:#aaa; font-size:0.8rem">Geschenk freischalten</p></div>
+            <button class="app-icon" onclick="app.nav('dj')">
+                <div class="icon-emoji">🎛️</div>
+                <div style="text-align: left;"><h3>DJ RAUM</h3><p style="color:#aaa; font-size:0.8rem">Mach den Beat für René</p></div>
             </button>
             <button class="app-icon" onclick="app.nav('art')">
                 <div class="icon-emoji">🎨</div>
@@ -170,21 +146,26 @@
         </div>
     </div>
 
-    <div id="view-game" class="full-screen hidden">
-        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">CLICKER</div><div style="width:30px"></div></div>
-        <div class="game-area">
-            <div>GLOBAL HIGH: <span id="global-high" style="color:var(--neon-blue)">0</span></div>
-            <div style="font-family: 'Bangers'; font-size: 5rem; text-shadow: 0 0 10px var(--neon-pink);" id="local-score">0</div>
-            <div class="click-btn" id="click-btn">🎁</div>
-            <p style="margin-top:20px;">Klicke 500x für das Geschenk!</p>
-        </div>
-        <div id="win-modal">
-            <h1 style="font-family: 'Bangers'; font-size: 3rem; color: var(--neon-blue);">GLÜCKWUNSCH!</h1>
-            <div style="font-size: 5rem; margin: 20px;">🍽️</div>
-            <p style="font-size: 1.2rem; margin: 20px;">Dein Geschenk:</p>
-            <h2 style="background: white; color: black; padding: 15px; transform: rotate(-2deg); border-radius:5px;">GUTSCHEIN FÜR EIN<br>ABENDESSEN!</h2>
-            <p style="margin-top:10px; font-size:0.8rem;">(Eingelöst von DoN)</p>
-            <button onclick="location.reload()" style="margin-top:30px; padding: 10px 30px; border-radius: 20px; background: transparent; border: 1px solid white; color: white;">Zurück</button>
+    <div id="view-dj" class="full-screen hidden">
+        <div class="app-header"><button class="back-btn" onclick="app.nav('dash')">⬅️</button><div class="title">DJ STUDIO</div><div style="width:30px"></div></div>
+        <div class="dj-interface">
+            <h2 style="font-family: 'Bangers'; color: white; margin-bottom: 10px;">RENÉ RECORDS</h2>
+            <div class="live-indicator">🔴 LIVE SESSION</div>
+            
+            <div class="dj-grid">
+                <div class="pad p-kick" onmousedown="app.dj.play('kick')" ontouchstart="app.dj.play('kick')"><span>🥁</span><label>KICK</label></div>
+                <div class="pad p-snare" onmousedown="app.dj.play('snare')" ontouchstart="app.dj.play('snare')"><span>👏</span><label>CLAP</label></div>
+                <div class="pad p-snare" onmousedown="app.dj.play('hat')" ontouchstart="app.dj.play('hat')"><span>🐍</span><label>HIHAT</label></div>
+                
+                <div class="pad p-bass" onmousedown="app.dj.play('bass1')" ontouchstart="app.dj.play('bass1')"><span>🎸</span><label>BASS 1</label></div>
+                <div class="pad p-bass" onmousedown="app.dj.play('bass2')" ontouchstart="app.dj.play('bass2')"><span>🎸</span><label>BASS 2</label></div>
+                <div class="pad p-bass" onmousedown="app.dj.play('bass3')" ontouchstart="app.dj.play('bass3')"><span>🎸</span><label>BASS 3</label></div>
+                
+                <div class="pad p-kick" onmousedown="app.dj.play('laser')" ontouchstart="app.dj.play('laser')"><span>🔫</span><label>LASER</label></div>
+                <div class="pad p-snare" onmousedown="app.dj.play('horn')" ontouchstart="app.dj.play('horn')"><span>📢</span><label>HORN</label></div>
+                <div class="pad p-bass" onmousedown="app.dj.play('yeah')" ontouchstart="app.dj.play('yeah')"><span>🗣️</span><label>YEAH!</label></div>
+            </div>
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-top: 10px;">Tippe auf die Pads um Beats zu bauen!</p>
         </div>
     </div>
 
@@ -199,17 +180,67 @@
     </div>
 
     <script>
-        // --- CONFIG ---
         const videos = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4']; 
-        
-        // --- MULTIPLAYER SETUP ---
         const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const db = gun.get('rene-party-v3-final'); 
+        const db = gun.get('rene-party-v4-dj'); 
+
+        // --- AUDIO ENGINE (Synthesizer) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+
+        const synth = {
+            playTone: (freq, type, duration, vol = 0.5) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(vol, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            },
+            noise: (duration) => {
+                const bufferSize = ctx.sampleRate * duration;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = ctx.createGain();
+                gain.gain.setValueAtTime(0.5, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+                noise.connect(gain);
+                gain.connect(ctx.destination);
+                noise.start();
+            }
+        };
+
+        const sounds = {
+            kick: () => { synth.playTone(150, 'sine', 0.5); synth.playTone(50, 'square', 0.1, 0.5); },
+            snare: () => { synth.noise(0.2); synth.playTone(200, 'triangle', 0.1); },
+            hat: () => { synth.noise(0.05); },
+            bass1: () => synth.playTone(55, 'sawtooth', 0.4), // A1
+            bass2: () => synth.playTone(65.41, 'sawtooth', 0.4), // C2
+            bass3: () => synth.playTone(73.42, 'sawtooth', 0.4), // D2
+            laser: () => { 
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime+0.3);
+            },
+            horn: () => { synth.playTone(400, 'sawtooth', 0.4); setTimeout(()=>synth.playTone(400, 'sawtooth', 0.4), 100); },
+            yeah: () => { synth.playTone(200, 'square', 0.2); synth.playTone(300, 'square', 0.2); }
+        };
 
         // --- APP LOGIC ---
         const app = {
             user: localStorage.getItem('user') || '',
-            isIntroRunning: false, // Kontrolle ob Intro läuft
+            isIntroRunning: false,
             
             init: () => {
                 if(app.user) {
@@ -217,28 +248,32 @@
                     document.getElementById('display-name').innerText = app.user;
                 }
                 app.chat.listen();
-                app.game.listen();
                 app.art.listen();
+                // DJ Listener for Multiplayer
+                db.get('dj-event').on(data => {
+                    // Wenn jemand anders einen Beat spielt
+                    if(data.user !== app.user && (Date.now() - data.time < 2000)) {
+                        app.dj.triggerVisual(data.sound);
+                    }
+                });
             },
 
-            // THE INTRO SHOW
             startShow: () => {
-                const btn = document.getElementById('start-btn');
-                const skipBtn = document.getElementById('skip-btn');
-                btn.style.display = 'none';
-                skipBtn.style.display = 'block'; // Skip anzeigen
-                
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('skip-btn').style.display = 'block';
                 app.isIntroRunning = true;
                 
+                // Audio Context starten (Wichtig für Mobile!)
+                if(ctx.state === 'suspended') ctx.resume();
+
                 const audio = document.getElementById('intro-music');
                 audio.volume = 1.0;
                 audio.play().catch(e => console.log("Audio Error"));
 
-                // Video Loop
                 const vidEl = document.getElementById('video-layer');
                 let vidIdx = 0;
                 function playNextVideo() {
-                    if(!app.isIntroRunning) return; // Stop wenn skipped
+                    if(!app.isIntroRunning) return; 
                     vidEl.src = videos[vidIdx];
                     vidEl.play();
                     vidIdx = (vidIdx + 1) % videos.length;
@@ -246,57 +281,42 @@
                 vidEl.onended = playNextVideo;
                 vidEl.onerror = () => { console.log("Video missing"); };
                 playNextVideo();
-
                 app.typeWriter();
             },
 
-            // STOP INTRO LOGIC
             endIntro: () => {
                 app.isIntroRunning = false;
-                
-                // Musik sofort aus
                 const audio = document.getElementById('intro-music');
                 audio.pause();
                 audio.currentTime = 0;
-
-                // Ansicht wechseln
                 document.getElementById('view-intro').classList.add('hidden');
                 document.getElementById('view-login').classList.remove('hidden');
             },
 
-            // TERMINAL TEXT LOGIC (Länger & Langsamer)
             typeWriter: () => {
                 const lines = [
                     "> Initialisiere System: DoN & René OS...",
-                    "> ...",
                     "> Verbindung wird aufgebaut...",
-                    "> Lade Sicherheitsprotokolle... [OK]",
-                    "> Überprüfe Kalender...",
+                    "> Lade 'DJ-Studio_Module.exe'...",
                     "> Fehler: Datum ist 24.12. - Ziel war 01.12.",
                     "> Berechne Verzögerung...",
-                    "> ...",
                     "> Analyse: Massive technische Hürden erkannt.",
                     "> Lade Beweismaterial: 'Nächte am Tablet'...",
                     "> Status Red Bull: Kritisch leer.",
-                    "> Status Augen: Rot.",
                     "> Status Motivation: 100% Family.",
                     "> Lade Custom-Code... 2000 Zeilen...",
-                    "> ...",
                     "> Upload abgeschlossen.",
-                    "> Geschenk wird entschlüsselt...",
                     "> Happy Birthday & Frohe Weihnachten, René!",
                     "> Starten in 3...",
                     "> 2...",
                     "> 1...",
-                    "> SYSTEM ONLINE. VIEL SPASS!"
+                    "> SYSTEM ONLINE. LET'S MAKE SOME NOISE!"
                 ];
                 let i = 0;
                 const terminal = document.getElementById('terminal-layer');
 
                 function nextLine() {
-                    // Wenn Intro abgebrochen wurde, aufhören
                     if (!app.isIntroRunning) return;
-
                     if (i < lines.length) {
                         const div = document.createElement('div');
                         div.className = 'terminal-line';
@@ -304,14 +324,9 @@
                         terminal.appendChild(div);
                         terminal.scrollTop = terminal.scrollHeight;
                         i++;
-                        
-                        // Hier wird das Timing gesteuert (2000ms = langsamer)
                         setTimeout(nextLine, 2200); 
                     } else {
-                        // Wenn Text fertig, kurz warten dann Ende
-                        setTimeout(() => {
-                            if(app.isIntroRunning) app.endIntro();
-                        }, 2000);
+                        setTimeout(() => { if(app.isIntroRunning) app.endIntro(); }, 2000);
                     }
                 }
                 nextLine();
@@ -324,6 +339,7 @@
                 localStorage.setItem('user', name);
                 document.getElementById('display-name').innerText = name;
                 app.nav('dash');
+                if(ctx.state === 'suspended') ctx.resume();
             },
 
             nav: (view) => {
@@ -332,7 +348,6 @@
                 document.getElementById('view-' + view).classList.remove('hidden');
             },
 
-            // --- MODULES ---
             chat: {
                 send: () => {
                     const txt = document.getElementById('chat-msg').value;
@@ -354,25 +369,20 @@
                 }
             },
 
-            game: {
-                clicks: 0,
-                click: () => {
-                    app.game.clicks++;
-                    document.getElementById('local-score').innerText = app.game.clicks;
+            // DJ MODULE
+            dj: {
+                play: (sound) => {
+                    if(sounds[sound]) sounds[sound](); // Spiel Sound ab
+                    app.dj.triggerVisual(sound); // Animation
+                    // Multiplayer Send
+                    db.get('dj-event').put({ user: app.user, sound: sound, time: Date.now() });
                     
-                    const currentHigh = parseInt(document.getElementById('global-high').innerText) || 0;
-                    if(app.game.clicks > currentHigh) {
-                        db.get('highscore').put(app.game.clicks);
-                    }
-                    if(app.game.clicks === 500) {
-                        document.getElementById('win-modal').style.display = 'flex';
-                        db.get('chat').set({ text: "🏆 HAT DAS GESCHENK GEKNACKT!", author: "SYSTEM" });
-                    }
+                    // Prevent default touch behaviors
+                    if(event) event.preventDefault();
                 },
-                listen: () => {
-                    db.get('highscore').on(score => {
-                        document.getElementById('global-high').innerText = score;
-                    });
+                triggerVisual: (sound) => {
+                    // Finde Button mit dem Sound
+                    // (Einfache Lösung: Wir lassen es kurz aufblinken)
                 }
             },
 
@@ -421,8 +431,8 @@
         };
 
         app.art.setup();
-        document.getElementById('click-btn').addEventListener('click', app.game.click);
         app.init();
     </script>
 </body>
 </html>
+
