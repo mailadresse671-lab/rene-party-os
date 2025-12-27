@@ -3,82 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>René OS - The Ultimate Intro</title>
+    <title>René OS - SYSTEM FAILURE</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --cyan: #00f2ea;
-            --pink: #ff0050;
-        }
+        :root { --cyan: #00f2ea; --pink: #ff0050; --red: #ff0000; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; font-family: 'Share Tech Mono', monospace; height: 100vh; overflow: hidden; color: white; }
 
-        /* Background Video */
+        /* Background & Glitch Effect */
         #intro-vid {
             position: absolute; inset: 0; width: 100%; height: 100%; 
-            object-fit: cover; opacity: 0.4; z-index: 1; transition: filter 0.3s;
+            object-fit: cover; opacity: 0.5; z-index: 1;
         }
 
-        /* Foto Layer */
         #pic-layer {
             position: absolute; inset: 0; width: 100%; height: 100%; 
             object-fit: contain; z-index: 5; opacity: 0;
-            transition: opacity 0.8s ease-in-out, transform 4s linear;
-            background: rgba(0,0,0,0.4);
+            transition: opacity 0.2s; /* Schnellerer Wechsel für Fehler-Look */
         }
 
-        /* Texte */
+        /* SYSTEM ERROR ELEMENTS */
+        #error-overlay {
+            position: absolute; inset: 0; z-index: 20;
+            pointer-events: none; display: none;
+            background: rgba(255, 0, 0, 0.2);
+            border: 20px solid var(--red);
+        }
+
+        .random-error {
+            position: absolute; background: #000; border: 2px solid var(--red);
+            padding: 10px; color: var(--red); font-size: 0.8rem; z-index: 30;
+            box-shadow: 10px 10px 0 var(--red);
+        }
+
         #impact-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 10; font-family: 'Bangers', cursive; font-size: 4rem;
-            text-align: center; color: white; text-shadow: 0 0 20px var(--cyan);
+            z-index: 40; font-family: 'Bangers', cursive; font-size: 5rem;
+            text-align: center; color: white; text-shadow: 5px 5px var(--red);
             opacity: 0; pointer-events: none; width: 100%;
+        }
+
+        /* Animations */
+        .invert { filter: invert(1) contrast(2); }
+        .shake { animation: shake 0.1s infinite; }
+        @keyframes shake {
+            0% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, -5px); }
+            100% { transform: translate(5px, 5px); }
         }
 
         #start-screen {
             position: absolute; inset: 0; z-index: 100;
             display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #1a1a3e 0%, #000 100%);
+            background: #000;
         }
 
         #start-btn {
-            padding: 25px 50px; border-radius: 50px; background: var(--pink);
-            color: white; border: none; font-size: 2rem; font-family: 'Bangers';
-            cursor: pointer; box-shadow: 0 0 30px var(--pink);
+            padding: 20px 40px; background: none; border: 2px solid var(--cyan);
+            color: var(--cyan); font-size: 2rem; font-family: 'Bangers'; cursor: pointer;
+            box-shadow: 0 0 20px var(--cyan);
         }
-
-        #skip-btn {
-            position: absolute; top: 20px; right: 20px; z-index: 101;
-            background: rgba(255,255,255,0.1); border: 1px solid white; color: white;
-            padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; display: none;
-        }
-
-        .active-pic { opacity: 1 !important; transform: scale(1.1); }
     </style>
 </head>
 <body>
 
     <audio id="intro-music" src="intro-sound.mp3"></audio>
-
+    <div id="error-overlay"></div>
+    
     <div id="start-screen">
-        <button id="start-btn" onclick="runIntro()">START EXPERIENCE ⚡</button>
+        <button id="start-btn" onclick="runIntro()">BREAK SYSTEM ⚡</button>
     </div>
 
-    <div id="intro-view" class="full-screen">
+    <div id="intro-view">
         <video id="intro-vid" muted playsinline></video>
         <img id="pic-layer" src="">
         <div id="impact-text"></div>
-        <button id="skip-btn" onclick="finishIntro()">SKIP ⏩</button>
     </div>
 
     <script>
         const images = Array.from({length: 10}, (_, i) => `pic${i+1}.jpg`);
         const vids = ['glitch1.mp4', 'glitch2.mp4', 'glitch3.mp4'];
-        const impactWords = [
-            "INITIALIZING", "SYSTEM OVERRIDE", "LOADING MEMORIES", 
-            "RENÉ", "CHAPTER 29", "HISTORY", "HACKING SUCCESS", 
-            "FAMILY", "LEGENDS", "READY?"
-        ];
+        const errorMsgs = ["CRITICAL_ERROR", "ACCESS_DENIED", "MEMORY_CORRUPTION", "SYSTEM_OVERLOAD", "INJECTING_VIBES"];
 
         async function runIntro() {
             document.getElementById('start-screen').style.display = 'none';
@@ -86,63 +91,60 @@
             const vid = document.getElementById('intro-vid');
             const pic = document.getElementById('pic-layer');
             const txt = document.getElementById('impact-text');
-
-            // Skip Button zeigen, wenn schon mal gesehen
-            if(localStorage.getItem('introSeen')) document.getElementById('skip-btn').style.display = 'block';
+            const err = document.getElementById('error-overlay');
 
             aud.play();
-            
-            // Warte bis wir die Songlänge wissen
-            aud.onloadedmetadata = () => {
-                const songDuration = aud.duration;
-                const interval = (songDuration / images.length) * 1000;
-                startSequence(interval);
-            };
+            vid.src = vids[0]; vid.play();
 
-            // Falls Metadaten schon da sind
-            if(aud.duration) {
-                const interval = (aud.duration / images.length) * 1000;
-                startSequence(interval);
-            }
+            const duration = aud.duration || 30; // Falls Dauer nicht sofort bekannt
+            const interval = (duration / images.length) * 1000;
 
-            async function startSequence(interval) {
-                for(let i = 0; i < images.length; i++) {
-                    // Video Hintergrund wechseln
-                    vid.src = vids[i % vids.length];
-                    vid.play();
+            for(let i = 0; i < images.length; i++) {
+                // 1. Bild setzen
+                pic.src = images[i];
+                pic.style.opacity = 1;
+                
+                // 2. Zufällige Fehler-Effekte
+                const triggerGlitch = async () => {
+                    // Flash & Shake
+                    err.style.display = 'block';
+                    document.body.classList.add('shake');
+                    if(Math.random() > 0.5) pic.classList.add('invert');
+                    
+                    // Zufällige Error-Popups spawnen
+                    for(let j=0; j<3; j++) {
+                        const div = document.createElement('div');
+                        div.className = 'random-error';
+                        div.innerText = errorMsgs[Math.floor(Math.random()*errorMsgs.length)];
+                        div.style.left = Math.random()*70 + '%';
+                        div.style.top = Math.random()*70 + '%';
+                        document.body.appendChild(div);
+                        setTimeout(() => div.remove(), 400);
+                    }
 
-                    // Bild und Text einblenden
-                    pic.src = images[i];
-                    pic.classList.add('active-pic');
-                    txt.innerText = impactWords[i] || "PARTY";
+                    txt.innerText = errorMsgs[i % errorMsgs.length];
                     txt.style.opacity = 1;
 
-                    await new Promise(r => setTimeout(r, interval * 0.8));
+                    await new Promise(r => setTimeout(r, 300));
                     
-                    // Kurz ausfaden vor nächstem Bild
+                    err.style.display = 'none';
+                    document.body.classList.remove('shake');
+                    pic.classList.remove('invert');
                     txt.style.opacity = 0;
-                    pic.classList.remove('active-pic');
-                    
-                    await new Promise(r => setTimeout(r, interval * 0.2));
-                }
+                };
+
+                await triggerGlitch();
+                
+                // Video-Wechsel
+                vid.src = vids[i % vids.length]; vid.play();
+
+                // Pause bis zum nächsten Bild (während Bild 1 sichtbar bleibt)
+                await new Promise(r => setTimeout(r, interval - 300));
             }
 
             aud.onended = () => {
-                finishIntro();
+                location.reload(); // Hier kommt später der App-Übergang
             };
-        }
-
-        function finishIntro() {
-            localStorage.setItem('introSeen', 'true');
-            document.getElementById('intro-music').pause();
-            // Hier leiten wir zum Login weiter
-            document.body.innerHTML = `
-                <div style="height:100vh; background:#020617; display:flex; align-items:center; justify-content:center; color:white; font-family:'Bangers'; flex-direction:column;">
-                    <h1 style="font-size:3rem; color:#00f2ea;">RENÉ OS v15</h1>
-                    <p style="margin-top:20px;">Hier geht's jetzt zum Dashboard...</p>
-                    <button onclick="location.reload()" style="margin-top:20px; color:#555; background:none; border:none; cursor:pointer;">REPLAY</button>
-                </div>
-            `;
         }
     </script>
 </body>
